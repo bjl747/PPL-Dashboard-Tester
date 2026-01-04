@@ -9,7 +9,7 @@
     "over_under": "43.5",
     "info": "",
     "league": "NFL",
-    "status": "In Progress",
+    "status": "Halftime",
     "winner": null,
     "home_score": 10,
     "away_score": 7
@@ -24,7 +24,7 @@
     "over_under": "45.5",
     "info": "",
     "league": "NFL",
-    "status": "Halftime",
+    "status": "In Progress",
     "winner": null,
     "home_score": 12,
     "away_score": 14
@@ -39,7 +39,7 @@
     "over_under": "49.5",
     "info": "",
     "league": "NFL",
-    "status": "Halftime",
+    "status": "In Progress",
     "winner": null,
     "home_score": 16,
     "away_score": 10
@@ -69,9 +69,9 @@
     "over_under": "37.5",
     "info": "",
     "league": "NFL",
-    "status": "In Progress",
+    "status": "Halftime",
     "winner": null,
-    "home_score": 20,
+    "home_score": 23,
     "away_score": 17
   },
   {
@@ -84,7 +84,7 @@
     "over_under": "46.5",
     "info": "",
     "league": "NFL",
-    "status": "Halftime",
+    "status": "In Progress",
     "winner": null,
     "home_score": 31,
     "away_score": 7

@@ -1,138 +1,717 @@
-name: Update Scores (The Grader)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPL Dashboard 2025-2026</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDKs (Compat version for easiest integration) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-on:
-  schedule:
-    - cron: '*/15 * * * *' # Runs every 15 minutes
-  workflow_dispatch: # Allows manual run button
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for in-browser JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate3d(0, 20px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.75); }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    
+    <!-- Initial Loading State (Shows if React fails) -->
+    <div id="root">
+        <div class="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+            <h1 class="text-2xl font-bold text-gray-700 mb-2">Loading PPL Dashboard...</h1>
+            <p class="text-gray-500 mb-6">If this message stays for more than 5 seconds, check the console for errors.</p>
+            <div id="error-display" class="hidden text-left bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded w-full max-w-lg shadow-lg">
+                <p class="font-bold">Error Detected:</p>
+                <code id="error-message" class="block mt-2 text-sm font-mono bg-red-50 p-2 rounded break-all"></code>
+            </div>
+        </div>
+    </div>
 
-jobs:
-  update-scores:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    <!-- Error Catcher Script -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            document.getElementById('error-display').classList.remove('hidden');
+            document.getElementById('error-message').innerText = msg + "\n\nLine: " + line;
+            return false;
+        };
+    </script>
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+    <script type="text/babel">
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        
+        // --- COMMISSIONER PASSWORD ---
+        const ADMIN_PASSWORD = "#747Tatum$"; 
 
-      - name: Install Dependencies
-        run: pip install requests
+        // -----------------------------------------------------------
+        // FIREBASE KEYS (CONFIGURED)
+        // -----------------------------------------------------------
+        let firebaseConfig = {
+            apiKey: "AIzaSyD-ifVj4glhVggs9fRmthfx6W8St4DC374",
+            authDomain: "ppl-dashboard-3339f.firebaseapp.com",
+            projectId: "ppl-dashboard-3339f",
+            storageBucket: "ppl-dashboard-3339f.firebasestorage.app",
+            messagingSenderId: "167725594826",
+            appId: "1:167725594826:web:dec644311e71488216dc33"
+        };
+        // -----------------------------------------------------------
 
-      - name: Check Scores and Grade
-        run: |
-          python -c "
-          import requests
-          import json
-          import os
+        // Check for Environment Config (Used automatically in Preview Mode if available)
+        if (typeof __firebase_config !== 'undefined') {
+            try { firebaseConfig = JSON.parse(__firebase_config); } catch (e) { console.error(e); }
+        }
 
-          # 1. LOAD EXISTING ODDS
-          if not os.path.exists('odds.json'):
-              print('No odds file found. Skipping.')
-              exit(0)
+        let db = null;
+        let auth = null;
+        const DEFAULT_APP_ID = 'ppl_manager_v1';
+        const activeAppId = typeof __app_id !== 'undefined' ? __app_id : DEFAULT_APP_ID;
 
-          with open('odds.json', 'r') as f:
-              games = json.load(f)
+        // Initialize Firebase Safely
+        const isConfigValid = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("AIzaSy...");
 
-          # Helper to normalize names for matching (e.g. 'Ole Miss' vs 'Mississippi')
-          def clean_name(name):
-              return name.lower().replace('state', '').replace('university', '').strip()
+        if (isConfigValid || firebaseConfig.apiKey.includes("AIzaSyD")) {
+            if (!firebase.apps.length) {
+                try {
+                    firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase Initialized Successfully");
+                } catch (error) {
+                    throw new Error("Firebase Init Failed: " + error.message);
+                }
+            }
+            db = firebase.firestore();
+            auth = firebase.auth();
+        } else {
+            console.warn("Firebase config missing. Offline Mode.");
+        }
 
-          # 2. FETCH ESPN SCORES (NFL & NCAAF)
-          # These endpoints are free and public
-          espn_urls = [
-              'http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
-              'http://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard'
-          ]
-          
-          live_data = []
-          for url in espn_urls:
-              try:
-                  res = requests.get(url)
-                  data = res.json()
-                  if 'events' in data:
-                      live_data.extend(data['events'])
-              except:
-                  pass
+        // --- Icons ---
+        const IconBase = ({ size = 24, className = "", children }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+        );
+        const Trophy = (p) => <IconBase {...p}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconBase>;
+        const Calculator = (p) => <IconBase {...p}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></IconBase>;
+        const Users = (p) => <IconBase {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconBase>;
+        const Save = (p) => <IconBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconBase>;
+        const Cloud = (p) => <IconBase {...p}><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.5-2.3-2.5-4-4.9-4-2.8 0-5 2.2-5 5 0 .4.1.8.2 1.2-.4.2-.9.4-1.4.4-1.9 0-3.5 1.6-3.5 3.5S2.1 26 4 26h13.5c2.5 0 4.5-2 4.5-4.5S20 19 17.5 19z"/></IconBase>;
+        const CloudOff = (p) => <IconBase {...p}><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 7h1.8a3 3 0 0 1 2.9 2.45"/><path d="M5 15a3 3 0 0 0-2.4 5.35"/><line x1="1" y1="1" x2="23" y2="23"/></IconBase>;
+        const DollarSign = (p) => <IconBase {...p}><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></IconBase>;
+        const AlertCircle = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconBase>;
+        const FileText = (p) => <IconBase {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></IconBase>;
+        const X = (p) => <IconBase {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>;
+        const ScrollText = (p) => <IconBase {...p}><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1H8a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2Z"/></IconBase>;
+        const Medal = (p) => <IconBase {...p}><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/></IconBase>;
+        const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></IconBase>;
+        const Unlock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></IconBase>;
+        const Calendar = (p) => <IconBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>;
 
-          # 3. MATCH AND GRADE
-          changes_made = False
-          
-          for game in games:
-              # Skip if already Final (unless you want to update post-game stats)
-              if game.get('status') == 'Final':
-                  continue
+        const { useState, useMemo, useEffect } = React;
+        const PAYOUT_PERCENTAGES = [0.00, 1.28, 2.56, 3.85, 5.13, 6.41, 7.69, 8.97, 10.26, 11.54, 12.82, 14.10, 15.38];
+        const TIERED_BILL_CAP = 2925.88;
 
-              # Find matching game in ESPN data
-              match = None
-              for event in live_data:
-                  # ESPN Data Structure
-                  comp = event['competitions'][0]
-                  e_home = comp['competitors'][0]['team']['displayName']
-                  e_away = comp['competitors'][1]['team']['displayName']
-                  
-                  # Fuzzy Match: Check if our name is inside ESPN's name or vice-versa
-                  # e.g. 'Kansas City' matches 'Kansas City Chiefs'
-                  if (game['home_team'] in e_home or e_home in game['home_team']) and \
-                     (game['away_team'] in e_away or e_away in game['away_team']):
-                      match = comp
-                      break
-              
-              if match:
-                  # Get Scores
-                  home_comp = match['competitors'][0]
-                  away_comp = match['competitors'][1]
-                  
-                  # ESPN sometimes flips the order, so check the 'homeAway' flag
-                  if home_comp['homeAway'] == 'away':
-                      home_comp, away_comp = away_comp, home_comp
+        const INITIAL_PLAYERS = [
+            { id: 1, name: "Brad Licht", points: 210, bowlPoints: 0 },
+            { id: 2, name: "Tabitha Marie Layher", points: 195, bowlPoints: 0 },
+            { id: 3, name: "Anthony Bacino", points: 180, bowlPoints: 0 },
+            { id: 4, name: "BJ Layher", points: 175, bowlPoints: 0 },
+            { id: 5, name: "Chris Wicks", points: 160, bowlPoints: 0 },
+            { id: 6, name: "Andrew Martin", points: 155, bowlPoints: 0 },
+            { id: 7, name: "Caleb Mason", points: 150, bowlPoints: 0 },
+            { id: 8, name: "Steve Lacombe", points: 145, bowlPoints: 0 },
+            { id: 9, name: "Kevin Berthelsen", points: 140, bowlPoints: 0 },
+            { id: 10, name: "Cole Jones", points: 135, bowlPoints: 0 },
+            { id: 11, name: "Matt Layher", points: 130, bowlPoints: 0 },
+            { id: 12, name: "Danny Layher", points: 125, bowlPoints: 0 },
+            { id: 13, name: "Joel Daniel Brown", points: 110, bowlPoints: 0 },
+        ];
 
-                  current_home_score = int(home_comp['score'])
-                  current_away_score = int(away_comp['score'])
-                  game_status = match['status']['type']['description'] # e.g. 'In Progress', 'Halftime', 'Final'
+        // 5-0 Pool Winners Data
+        const FIVE_OH_WINNERS = {
+            "Tabitha Marie Layher": { week: 10, amount: 650 },
+            "Brad Licht": { week: 16, amount: 195 },
+            "Andrew Martin": { week: 18, amount: 195 },
+            "Anthony Bacino": { week: 11, amount: 65 },
+            "Kevin Berthelsen": { week: 11, amount: 65 }
+        };
 
-                  # Update our file with live info
-                  game['home_score'] = current_home_score
-                  game['away_score'] = current_away_score
-                  game['status'] = game_status
-                  changes_made = True
+        const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
+            <button
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center space-x-2 px-4 py-3 rounded-t-lg font-bold transition-colors duration-200 text-sm md:text-base whitespace-nowrap flex-shrink-0 ${
+                activeTab === id ? 'bg-white text-red-700 border-t-4 border-red-700 shadow-sm' : 'bg-black text-gray-400 hover:text-white hover:bg-gray-900'}`}
+            >
+                <Icon size={18} />
+                <span>{label}</span>
+            </button>
+        );
 
-                  # GRADE IT (Only if Final)
-                  if 'Final' in game_status:
-                      spread = game.get('spread_raw')
-                      
-                      if spread is not None and spread != 'N/A':
-                          # Logic: Add spread to Home Score. Compare to Away.
-                          # Example: Chiefs (-3.5) vs Ravens. 
-                          # If Chiefs score 24, Ravens 20. 
-                          # Adjusted Home = 24 + (-3.5) = 20.5. 
-                          # 20.5 > 20, so Home Wins (Covers).
-                          adjusted_home = current_home_score + float(spread)
-                          
-                          if adjusted_home > current_away_score:
-                              game['winner'] = 'Home'
-                          elif adjusted_home < current_away_score:
-                              game['winner'] = 'Away'
-                          else:
-                              game['winner'] = 'Push'
-                              
-                          # Total (Over/Under) Logic could go here too if you need it
+        const LoginModal = ({ isOpen, onClose, onLogin }) => {
+            const [password, setPassword] = useState("");
+            const [error, setError] = useState(false);
+            if (!isOpen) return null;
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (password === ADMIN_PASSWORD) { onLogin(); setPassword(""); setError(false); onClose(); } 
+                else { setError(true); }
+            };
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"><X size={20} /></button>
+                        <h3 className="text-xl font-bold mb-4 flex items-center"><Lock className="mr-2 text-red-700" size={20} /> Commissioner Login</h3>
+                        <form onSubmit={handleSubmit}>
+                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={`w-full border-2 rounded p-2 mb-4 focus:outline-none focus:border-red-700 ${error ? 'border-red-500' : 'border-gray-300'}`} placeholder="Enter Passcode" autoFocus />
+                            {error && <p className="text-red-500 text-sm mb-4">Incorrect password.</p>}
+                            <button type="submit" className="w-full bg-red-700 text-white font-bold py-2 rounded hover:bg-red-800 transition">Unlock Dashboard</button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
 
-          # 4. SAVE (Only if we found updates)
-          if changes_made:
-              with open('odds.json', 'w') as f:
-                  json.dump(games, f, indent=2)
-              print('Updated live scores.')
-          else:
-              print('No live game updates found.')
-          "
+        const Games = ({ user }) => {
+            const [groupedGames, setGroupedGames] = useState({});
+            const [status, setStatus] = useState('loading'); 
+            const [picks, setPicks] = useState({});
+            const [isSubmitting, setIsSubmitting] = useState(false);
 
-      - name: Commit and Push changes
-        run: |
-          git config --global user.name 'Odds-Bot'
-          git config --global user.email 'bot@noreply.github.com'
-          git add odds.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m 'Update Live Scores' && git push)
+            // MOCK DATA for Preview (Fallback)
+            const MOCK_GAMES = [
+              {
+                date: new Date().toISOString(),
+                home_team: "Kansas City Chiefs",
+                away_team: "Baltimore Ravens",
+                spread: "-3.5",
+                over_under: "48.5",
+                info: "AFC Championship"
+              },
+              {
+                date: new Date().toISOString(),
+                home_team: "San Francisco 49ers",
+                away_team: "Detroit Lions",
+                spread: "-7.0",
+                over_under: "51.0",
+                info: "NFC Championship"
+              }
+            ];
+
+            // Authentication Gate - Checks for 'Real' user (not anonymous)
+            if (!user || user.isAnonymous) {
+                const handleLogin = async () => {
+                    if (!auth) {
+                        alert("Firebase Authentication is not initialized. Check your API keys.");
+                        return;
+                    }
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    try {
+                        // This will trigger the Google sign-in flow.
+                        // If successful, it replaces/links the anonymous account.
+                        await auth.signInWithPopup(provider);
+                    } catch (error) {
+                        console.error("Login Error:", error);
+                        alert("Login Failed: " + error.message);
+                    }
+                };
+
+                return (
+                    <div className="bg-white p-8 rounded-b-lg shadow-lg border border-gray-200 text-center min-h-[50vh] flex flex-col items-center justify-center">
+                        <div className="text-red-600 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Login Required</h3>
+                        <p className="text-gray-500 mb-6 max-w-md mx-auto">You must be signed in with your Google account to access the betting lines and submit your picks.</p>
+                        <button 
+                            onClick={handleLogin}
+                            className="bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-8 rounded-lg shadow-md transition transform active:scale-95 flex items-center"
+                        >
+                            <span className="mr-2">Sign in with Google</span>
+                        </button>
+                    </div>
+                );
+            }
+
+            useEffect(() => {
+                const processData = (data) => {
+                    // Filter Logic: Today through Upcoming Monday
+                    const now = new Date();
+                    const startDate = new Date(now);
+                    startDate.setHours(0, 0, 0, 0);
+
+                    const dayOfWeek = now.getDay();
+                    const targetMonday = new Date(startDate);
+                    targetMonday.setDate(startDate.getDate() + (dayOfWeek === 1 ? 0 : (1 + 7 - dayOfWeek) % 7)); 
+                    targetMonday.setHours(23, 59, 59, 999);
+                    
+                    const currentGames = data.filter(game => {
+                        const gameDate = new Date(game.date);
+                        return gameDate >= startDate && gameDate <= targetMonday;
+                    });
+
+                    currentGames.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    const groups = currentGames.reduce((acc, game) => {
+                        const d = new Date(game.date);
+                        const dateHeader = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: '2-digit' });
+                        if (!acc[dateHeader]) acc[dateHeader] = [];
+                        acc[dateHeader].push(game);
+                        return acc;
+                    }, {});
+
+                    setGroupedGames(groups);
+                    setStatus(currentGames.length > 0 ? 'success' : 'empty');
+                };
+
+                fetch('odds.json')
+                    .then(res => {
+                        if (!res.ok) throw new Error('Failed to fetch odds');
+                        return res.json();
+                    })
+                    .then(data => processData(data))
+                    .catch(err => {
+                        console.warn("Fetch error (using mock data for preview):", err);
+                        processData(MOCK_GAMES);
+                    });
+            }, []);
+
+            const handlePick = (gameId, type, value) => {
+                setPicks(prev => {
+                    const currentGamePicks = prev[gameId] || {};
+                    if (currentGamePicks[type] === value) {
+                        const newGamePicks = { ...currentGamePicks };
+                        delete newGamePicks[type];
+                        if (Object.keys(newGamePicks).length === 0) {
+                            const newPicks = { ...prev };
+                            delete newPicks[gameId];
+                            return newPicks;
+                        }
+                        return { ...prev, [gameId]: newGamePicks };
+                    }
+                    return {
+                        ...prev,
+                        [gameId]: {
+                            ...currentGamePicks,
+                            [type]: value
+                        }
+                    };
+                });
+            };
+
+            const submitPicks = async () => {
+                setIsSubmitting(true);
+                try {
+                    await db.collection('artifacts').doc(activeAppId)
+                        .collection('public').doc('data')
+                        .collection('season_2025_picks').doc(user.uid)
+                        .set({
+                            picks: picks,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            email: user.email,
+                            displayName: user.displayName
+                        });
+                    
+                    alert("Picks Submitted Successfully!");
+                } catch (error) {
+                    console.error("Error submitting picks:", error);
+                    alert("Error submitting picks. Please try again.");
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            const totalPickCount = Object.values(picks).reduce((acc, game) => acc + Object.keys(game).length, 0);
+
+            if (status === 'loading') {
+                return (
+                    <div className="bg-white p-8 rounded-b-lg shadow-lg border border-gray-200 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700 mx-auto mb-4"></div>
+                        <p className="text-gray-500">Loading games...</p>
+                    </div>
+                );
+            }
+
+            if (status === 'error' || status === 'empty') {
+                return (
+                    <div className="bg-white p-8 rounded-b-lg shadow-lg border border-gray-200 text-center">
+                        <AlertCircle className="text-gray-400 mx-auto mb-4" size={48} />
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Lines are currently updating</h3>
+                        <p className="text-gray-500">Please check back in a moment.</p>
+                    </div>
+                );
+            }
+
+            return (
+                <div className={`bg-gray-100 ${totalPickCount > 0 ? 'pb-24' : 'pb-6'}`}>
+                    <div className="bg-white p-4 shadow-sm mb-4 border-b border-gray-200">
+                        <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">Sportsbook Lines</h2>
+                    </div>
+
+                    <div className="max-w-4xl mx-auto px-2 md:px-0">
+                        {Object.keys(groupedGames).map(dateHeader => (
+                            <div key={dateHeader} className="mb-6">
+                                <div className="bg-gray-200 text-gray-700 font-bold px-4 py-2 text-sm uppercase tracking-wide rounded-t-lg border-b border-gray-300">
+                                    {dateHeader}
+                                </div>
+                                <div className="space-y-3 mt-2">
+                                    {groupedGames[dateHeader].map((game, idx) => {
+                                        const d = new Date(game.date);
+                                        const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                                        const gameId = `${game.away_team}_${game.home_team}_${game.date}`;
+                                        
+                                        const homeSpread = parseFloat(game.spread);
+                                        const awaySpread = homeSpread * -1;
+                                        const fmtSpread = (num) => num > 0 ? `+${num}` : num;
+
+                                        // Big Ticket Button Style
+                                        const getBigButtonClass = (isSelected) => `
+                                            flex justify-between items-center w-full py-3 px-4 border-2 rounded-md transition font-bold text-sm md:text-base mb-2
+                                            ${isSelected 
+                                                ? 'bg-green-600 border-green-600 text-white shadow-md' 
+                                                : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'}
+                                        `;
+
+                                        const currentPicks = picks[gameId] || {};
+
+                                        return (
+                                            <div key={gameId} className="bg-white border border-gray-300 rounded-lg p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center">
+                                                
+                                                {/* Left Col: Teams & Odds */}
+                                                <div className="flex-1 grid grid-cols-2 gap-3 md:border-r md:border-gray-200 md:pr-4 mb-4 md:mb-0">
+                                                    
+                                                    {/* Row 1: Teams - Away (Left) vs Home (Right) */}
+                                                    <div className="col-span-1">
+                                                        <button onClick={() => handlePick(gameId, 'spread', 'away')} className={getBigButtonClass(currentPicks.spread === 'away')}>
+                                                            <span className="truncate mr-2">{game.away_team}</span>
+                                                            <span>{fmtSpread(awaySpread)}</span>
+                                                        </button>
+                                                    </div>
+                                                    <div className="col-span-1">
+                                                        <button onClick={() => handlePick(gameId, 'spread', 'home')} className={getBigButtonClass(currentPicks.spread === 'home')}>
+                                                            <span className="truncate mr-2">{game.home_team}</span>
+                                                            <span>{fmtSpread(homeSpread)}</span>
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Row 2: Totals - Over (Left) vs Under (Right) */}
+                                                    <div className="col-span-1">
+                                                        <button onClick={() => handlePick(gameId, 'total', 'over')} className={getBigButtonClass(currentPicks.total === 'over')}>
+                                                            <span>O {game.over_under}</span>
+                                                            <span className="text-xs font-normal opacity-75">Over</span>
+                                                        </button>
+                                                    </div>
+                                                    <div className="col-span-1">
+                                                        <button onClick={() => handlePick(gameId, 'total', 'under')} className={getBigButtonClass(currentPicks.total === 'under')}>
+                                                            <span>U {game.over_under}</span>
+                                                            <span className="text-xs font-normal opacity-75">Under</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Right Col: Info */}
+                                                <div className="md:w-32 flex flex-col items-center justify-center text-center pl-0 md:pl-4">
+                                                    <div className="text-lg font-bold text-gray-900">{timeStr}</div>
+                                                    {game.info && <div className="text-xs text-red-600 font-bold uppercase mt-1 bg-red-50 px-2 py-1 rounded">{game.info}</div>}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {totalPickCount > 0 && (
+                        <div className="fixed bottom-0 left-0 w-full bg-black text-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 border-t-4 border-green-600 flex justify-between items-center animate-fade-in-up">
+                            <div className="flex flex-col">
+                                <span className="font-bold text-lg leading-tight">{totalPickCount} Pick{totalPickCount !== 1 ? 's' : ''} Selected</span>
+                                <span className="text-xs text-gray-400">Signed in as {user.displayName || user.email}</span>
+                            </div>
+                            <button 
+                                onClick={submitPicks}
+                                disabled={isSubmitting}
+                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-md transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? "Saving..." : "Submit Picks"}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const Dashboard = ({ players, handleNameChange, handleScoreChange, showImport, setShowImport, importText, setImportText, handleBulkImport, onSave, isOffline }) => (
+            <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">League Dashboard</h2>
+                    <div className="flex items-center space-x-3 w-full sm:w-auto">
+                        <button onClick={() => setShowImport(!showImport)} className="flex items-center justify-center space-x-1 text-sm font-bold text-red-700 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-2 rounded transition-colors w-full sm:w-auto">
+                            <FileText size={16} /><span>Bulk Import</span>
+                        </button>
+                        <div className="text-xs text-gray-500 italic hidden sm:block">{isOffline ? "Changes local only (Offline)" : "Edits save automatically"}</div>
+                    </div>
+                </div>
+                {isOffline && (
+                    <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                         <div className="flex items-start">
+                            <AlertCircle className="text-yellow-600 mr-2 mt-0.5" size={16} />
+                            <p className="text-xs text-yellow-800"><strong>Setup Required:</strong> To enable live saving for GitHub, edit this file and replace the <code>firebaseConfig</code> at the top.</p>
+                         </div>
+                    </div>
+                )}
+                {showImport && (
+                    <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div className="flex justify-between items-center mb-2"><h3 className="font-bold text-gray-900">Paste Names List</h3><button onClick={() => setShowImport(false)} className="text-gray-500 hover:text-red-700"><X size={18} /></button></div>
+                        <p className="text-xs text-gray-500 mb-2">Paste a list of names (one per line).</p>
+                        <textarea value={importText} onChange={(e) => setImportText(e.target.value)} className="w-full h-32 p-2 border border-gray-300 rounded focus:border-red-700 focus:ring-0 text-base" placeholder="BJ Layher&#10;John Doe..." />
+                        <button onClick={handleBulkImport} className="mt-2 bg-red-700 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-800 transition-colors w-full sm:w-auto">Update Names</button>
+                    </div>
+                )}
+                <div className="overflow-x-auto -mx-4 md:mx-0"><div className="inline-block min-w-full align-middle"><table className="min-w-full divide-y divide-gray-200"><thead className="bg-gray-50"><tr><th className="sticky left-0 z-10 bg-gray-50 px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider shadow-sm md:shadow-none">Player Name</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Total Points</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th></tr></thead><tbody className="bg-white divide-y divide-gray-200">{players.map((player) => (<tr key={player.id} className="hover:bg-red-50 transition-colors"><td className="sticky left-0 z-10 bg-white px-4 md:px-6 py-3 whitespace-nowrap shadow-sm md:shadow-none"><input type="text" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} onBlur={onSave} className="w-32 md:w-full border-gray-300 border-b focus:border-red-700 focus:ring-0 px-2 py-1 text-gray-900 font-medium text-base" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap"><input type="number" value={player.points} onChange={(e) => handleScoreChange(player.id, e.target.value)} onBlur={onSave} className="w-24 border-gray-300 border focus:border-red-700 rounded px-3 py-2 text-gray-900 text-base" pattern="[0-9]*" inputMode="numeric" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500">{isOffline ? <span className="flex items-center text-gray-400">Saved (Local)</span> : <span className="flex items-center text-green-600"><Save size={14} className="mr-1" /> Auto-Save</span>}</td></tr>))}</tbody></table></div></div>
+            </div>
+        );
+
+        const BowlInput = ({ players, handleNameChange, handleBowlScoreChange, onSave, isOffline }) => (
+            <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">Bowl Input</h2>
+                    <div className="text-xs md:text-sm text-gray-500 italic">Enter Bowl scores.</div>
+                </div>
+                <div className="overflow-x-auto -mx-4 md:mx-0"><div className="inline-block min-w-full align-middle"><table className="min-w-full divide-y divide-gray-200"><thead className="bg-gray-50"><tr><th className="sticky left-0 z-10 bg-gray-50 px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider shadow-sm md:shadow-none">Player Name</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Bowl Pts</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th></tr></thead><tbody className="bg-white divide-y divide-gray-200">{players.map((player) => (<tr key={player.id} className="hover:bg-red-50 transition-colors"><td className="sticky left-0 z-10 bg-white px-4 md:px-6 py-3 whitespace-nowrap shadow-sm md:shadow-none"><input type="text" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} onBlur={onSave} className="w-32 md:w-full border-gray-300 border-b focus:border-red-700 focus:ring-0 px-2 py-1 text-gray-900 font-medium text-base" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap"><input type="number" value={player.bowlPoints} onChange={(e) => handleBowlScoreChange(player.id, e.target.value)} onBlur={onSave} className="w-24 border-gray-300 border focus:border-red-700 rounded px-3 py-2 text-gray-900 text-base" pattern="[0-9]*" inputMode="numeric" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500">{isOffline ? <span className="flex items-center text-gray-400">Saved (Local)</span> : <span className="flex items-center text-green-600"><Save size={14} className="mr-1" /> Auto-Save</span>}</td></tr>))}</tbody></table></div></div>
+            </div>
+        );
+
+        const Standings = ({ sortedPlayers, title }) => (
+            <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3 mb-4">{title}</h2>
+                <div className="space-y-2">
+                    {sortedPlayers.map((player, index) => {
+                        const isWinner = index === 0;
+                        const displayPoints = title.includes("Bowl") ? player.bowlPoints : player.points;
+                        const fiveOhData = !title.includes("Bowl") ? FIVE_OH_WINNERS[player.name] : null;
+
+                        return (
+                            <div key={player.id} className={`flex items-center justify-between px-3 md:px-4 py-2 rounded-lg border-l-4 shadow-sm ${isWinner ? 'bg-red-50 border-red-600' : 'bg-white border-gray-300'}`}>
+                                <div className="flex items-center space-x-3"><div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm md:text-base ${isWinner ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{index + 1}</div>
+                                <div className="flex flex-col items-start sm:flex-row sm:items-center sm:space-x-2">
+                                    <div className="flex items-center space-x-2">
+                                        <h3 className={`font-bold text-sm md:text-base ${isWinner ? 'text-red-700' : 'text-gray-900'} truncate max-w-[140px] md:max-w-none`}>{player.name}</h3>
+                                        {isWinner && (<span className="text-[10px] font-semibold text-red-600 uppercase tracking-wide border border-red-200 px-1 rounded">Lead</span>)}
+                                    </div>
+                                    {fiveOhData && (
+                                        <span className="text-xs font-bold text-red-600">
+                                            (5-0 Week {fiveOhData.week} - ${fiveOhData.amount})
+                                        </span>
+                                    )}
+                                </div></div>
+                                <div className="text-right"><div className="text-lg md:text-xl font-bold text-gray-900 leading-none">{displayPoints}</div><div className="text-[10px] text-gray-500 uppercase">Pts</div></div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+
+        const Payouts = ({ dinnerCost, setDinnerCost, payoutData, tieredBillCap, onSave, isAdmin }) => {
+            const isOverLimit = dinnerCost > tieredBillCap;
+            return (
+                <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-start mb-6 space-y-4 md:space-y-0">
+                        <div><h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">Payout Estimator</h2><p className="text-gray-500 mt-1 text-xs md:text-sm">Dinner Cost Based on Placement and Total</p></div>
+                        <div className="flex flex-col items-start md:items-end w-full md:w-auto"><label className="text-sm font-bold text-gray-700 mb-1">Total Dinner Cost ($)</label><div className="relative w-full md:w-auto"><DollarSign size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" /><input type="number" value={dinnerCost} onChange={(e) => setDinnerCost(Number(e.target.value))} onBlur={() => isAdmin && onSave()} className={`pl-10 pr-4 py-2 border-2 rounded-lg text-xl font-bold w-full md:w-48 text-right text-base ${isAdmin ? 'border-red-200 focus:border-red-600' : 'border-gray-200 bg-gray-50 text-gray-500'}`} inputMode="decimal" /></div></div>
+                    </div>
+                    {isOverLimit && (
+                        <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-3 md:p-4 flex items-start">
+                            <AlertCircle className="text-yellow-600 mr-3 mt-0.5 flex-shrink-0" size={24} />
+                            <div><h4 className="font-bold text-yellow-800 text-sm md:text-base">Bill Exceeds Tiered Cap</h4><p className="text-xs md:text-sm text-yellow-700 mt-1">The total exceeds ${tieredBillCap.toFixed(2)}. As per Bylaw 11.5, the last place payout is capped at $450 (base), and the overage (<span className="font-mono font-bold">${(dinnerCost - tieredBillCap).toFixed(2)}</span>) is split evenly.</p></div>
+                        </div>
+                    )}
+                    <div className="overflow-x-auto -mx-4 md:mx-0 rounded-lg border border-gray-200"><table className="min-w-full divide-y divide-gray-200"><thead className="bg-black text-white"><tr><th className="px-3 md:px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">#</th><th className="px-3 md:px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Player</th><th className="hidden sm:table-cell px-3 md:px-4 py-3 text-right text-xs font-bold uppercase tracking-wider">Base %</th>{isOverLimit && <th className="px-3 md:px-4 py-3 text-right text-xs font-bold uppercase tracking-wider bg-gray-800">Ovr</th>}<th className="px-3 md:px-4 py-3 text-right text-xs font-bold uppercase tracking-wider bg-red-700">Total</th></tr></thead><tbody className="bg-white divide-y divide-gray-200">{payoutData.map((player, idx) => (<tr key={player.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}><td className="px-3 md:px-4 py-3 whitespace-nowrap font-bold text-gray-500 text-sm">{player.rank}</td><td className="px-3 md:px-4 py-3 whitespace-nowrap font-medium text-gray-900 text-sm max-w-[120px] truncate">{player.name}</td><td className="hidden sm:table-cell px-3 md:px-4 py-3 whitespace-nowrap text-right text-gray-500 text-sm">{player.percent.toFixed(2)}%</td>{isOverLimit && (<td className="px-3 md:px-4 py-3 whitespace-nowrap text-right text-gray-600 bg-gray-100 text-xs md:text-sm">+${player.overageShare.toFixed(0)}</td>)}<td className="px-3 md:px-4 py-3 whitespace-nowrap text-right font-bold text-red-700 bg-red-50 text-sm">${player.totalPay.toFixed(2)}</td></tr>))}</tbody><tfoot className="bg-gray-100 font-bold"><tr><td colSpan={isOverLimit ? 3 : 2} className="px-3 md:px-4 py-3 text-right text-gray-900 text-sm">Total:</td><td className="hidden sm:table-cell px-3 md:px-4 py-3"></td><td className="px-3 md:px-4 py-3 text-right text-red-700 border-t-2 border-red-200 text-sm">${payoutData.reduce((sum, p) => sum + p.totalPay, 0).toFixed(2)}</td></tr></tfoot></table></div>
+                </div>
+            );
+        };
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('standings');
+            const [players, setPlayers] = useState(INITIAL_PLAYERS);
+            const [dinnerCost, setDinnerCost] = useState(2500);
+            const [showImport, setShowImport] = useState(false);
+            const [importText, setImportText] = useState('');
+            const [isConnected, setIsConnected] = useState(false);
+            const [isSaving, setIsSaving] = useState(false);
+            const [isOffline, setIsOffline] = useState(false);
+            
+            // --- User State ---
+            const [user, setUser] = useState(null);
+            
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [showLogin, setShowLogin] = useState(false);
+
+            useEffect(() => {
+                if (!isConfigValid && !firebaseConfig.apiKey.includes("AIzaSyD")) {
+                    setIsOffline(true);
+                    return;
+                }
+
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await auth.signInWithCustomToken(__initial_auth_token);
+                        } else {
+                            // Only sign in anonymously if NO user is present to allow Google Sign In later
+                            // However, 'auth' persists state. onAuthStateChanged handles it.
+                            if (!auth.currentUser) {
+                                await auth.signInAnonymously();
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Auth Error", error);
+                        setIsOffline(true);
+                    }
+                };
+                initAuth();
+
+                const unsubscribeAuth = auth.onAuthStateChanged((u) => {
+                    if (u) {
+                        setUser(u); // Set the full user object
+                        setIsConnected(true);
+                        setIsOffline(false);
+                        const docRef = db.collection('artifacts').doc(activeAppId).collection('public').doc('data').collection('season_2025').doc('main');
+                        
+                        const unsubscribeSnapshot = docRef.onSnapshot((doc) => {
+                            if (doc.exists) {
+                                const data = doc.data();
+                                if (data && data.players) {
+                                    setPlayers(data.players);
+                                    if (data.dinnerCost) setDinnerCost(data.dinnerCost);
+                                }
+                            } else {
+                                docRef.set({
+                                    players: INITIAL_PLAYERS,
+                                    dinnerCost: 2500,
+                                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        });
+                        return () => unsubscribeSnapshot();
+                    } else {
+                        setUser(null);
+                        setIsConnected(false);
+                    }
+                });
+                return () => unsubscribeAuth();
+            }, []);
+
+            const saveData = async () => {
+                if (!isConnected || !db) return;
+                setIsSaving(true);
+                try {
+                    await db.collection('artifacts').doc(activeAppId).collection('public').doc('data').collection('season_2025').doc('main').set({
+                        players: players,
+                        dinnerCost: dinnerCost,
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    setTimeout(() => setIsSaving(false), 500); 
+                } catch (error) {
+                    console.error("Error saving data: ", error);
+                    setIsSaving(false);
+                }
+            };
+
+            const sortedPlayers = useMemo(() => {
+                return [...players].sort((a, b) => b.points - a.points);
+            }, [players]);
+
+            const sortedBowlPlayers = useMemo(() => {
+                return [...players].sort((a, b) => b.bowlPoints - a.bowlPoints);
+            }, [players]);
+
+            const payoutData = useMemo(() => {
+                const tieredAmount = Math.min(dinnerCost, TIERED_BILL_CAP);
+                const overageAmount = Math.max(0, dinnerCost - TIERED_BILL_CAP);
+                const overagePerPerson = overageAmount / 13;
+                return sortedPlayers.map((player, index) => {
+                    const pct = PAYOUT_PERCENTAGES[index] || 0;
+                    const tieredShare = (tieredAmount * pct) / 100;
+                    const totalShare = tieredShare + overagePerPerson;
+                    return { ...player, rank: index + 1, percent: pct, tieredShare: tieredShare, overageShare: overagePerPerson, totalPay: totalShare };
+                });
+            }, [sortedPlayers, dinnerCost]);
+
+            const handleScoreChange = (id, newPoints) => { setPlayers(prev => prev.map(p => p.id === id ? { ...p, points: Number(newPoints) } : p)); };
+            const handleBowlScoreChange = (id, newPoints) => { setPlayers(prev => prev.map(p => p.id === id ? { ...p, bowlPoints: Number(newPoints) } : p)); };
+            const handleNameChange = (id, newName) => { setPlayers(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p)); };
+
+            const handleBulkImport = () => {
+                const names = importText.split('\n').map(n => n.trim()).filter(n => n);
+                if (names.length === 0) return;
+                const newPlayers = [...players];
+                names.forEach((name, index) => { if (newPlayers[index]) { newPlayers[index] = { ...newPlayers[index], name }; } });
+                setPlayers(newPlayers);
+                if (isConnected && db) {
+                    db.collection('artifacts').doc(activeAppId).collection('public').doc('data').collection('season_2025').doc('main').set({
+                        players: newPlayers, dinnerCost: dinnerCost, lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                setShowImport(false);
+                setImportText('');
+            };
+
+            const handleLogout = () => { setIsAdmin(false); setActiveTab('standings'); };
+
+            return (
+                <div className="min-h-screen bg-gray-100 font-sans text-gray-900 pb-12">
+                    <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onLogin={() => { setIsAdmin(true); setActiveTab('dashboard'); }} />
+                    <header className="bg-black text-white shadow-lg border-b-4 border-red-700 sticky top-0 z-40">
+                        <div className="max-w-4xl mx-auto px-4 py-4 md:py-6 flex items-center justify-between">
+                            <div><h1 className="text-xl md:text-3xl font-extrabold tracking-tight text-white"><span className="text-red-600">PPL</span> Dashboard 2025-2026</h1><p className="text-gray-400 text-xs md:text-sm mt-1">Pigskin Prognosticators League</p></div>
+                            <div className="flex flex-col items-end">
+                                <div className="flex items-center space-x-3 mb-1"><div className="hidden sm:block"><div className="bg-red-700 text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider">Season 2025-26</div></div><button onClick={isAdmin ? handleLogout : () => setShowLogin(true)} className={`flex items-center text-xs font-bold px-2 py-1 rounded border ${isAdmin ? 'bg-red-900 border-red-500 text-white' : 'bg-gray-800 border-gray-600 text-gray-400 hover:text-white'}`}>{isAdmin ? <Unlock size={14} className="mr-1" /> : <Lock size={14} className="mr-1" />}{isAdmin ? "Admin" : "Login"}</button></div>
+                                <div className="flex items-center space-x-2 text-xs">{isConnected ? <span className="flex items-center text-green-400"><Cloud size={14} className="mr-1" />{isSaving ? "Saving..." : "Online"}</span> : <span className="flex items-center text-gray-400"><CloudOff size={14} className="mr-1" />Offline</span>}</div>
+                            </div>
+                        </div>
+                    </header>
+                    <main className="max-w-4xl mx-auto px-0 md:px-4 mt-4 md:mt-8">
+                        <div className="flex border-b border-gray-300 mb-0 overflow-x-auto no-scrollbar px-2 md:px-0 bg-gray-100">
+                            <NavButton id="standings" icon={Trophy} label="Standings" activeTab={activeTab} setActiveTab={setActiveTab} />
+                            <NavButton id="bowlStandings" icon={Medal} label="Bowl Pool" activeTab={activeTab} setActiveTab={setActiveTab} />
+                            <NavButton id="payouts" icon={Calculator} label="Payouts" activeTab={activeTab} setActiveTab={setActiveTab} />
+                            <NavButton id="games" icon={Calendar} label="Games" activeTab={activeTab} setActiveTab={setActiveTab} />
+                            {isAdmin && (<><div className="w-px bg-gray-300 mx-1"></div><NavButton id="dashboard" icon={Users} label="Dashboard" activeTab={activeTab} setActiveTab={setActiveTab} /><NavButton id="bowlInput" icon={ScrollText} label="Bowl Input" activeTab={activeTab} setActiveTab={setActiveTab} /></>)}
+                        </div>
+                        <div className="animate-fade-in-up">
+                            {isAdmin && activeTab === 'dashboard' && (<Dashboard players={players} handleNameChange={handleNameChange} handleScoreChange={handleScoreChange} showImport={showImport} setShowImport={setShowImport} importText={importText} setImportText={setImportText} handleBulkImport={handleBulkImport} onSave={saveData} isOffline={isOffline} />)}
+                            {activeTab === 'standings' && (<Standings sortedPlayers={sortedPlayers} title="Current Standings" />)}
+                            {activeTab === 'payouts' && (<Payouts dinnerCost={dinnerCost} setDinnerCost={setDinnerCost} payoutData={payoutData} tieredBillCap={TIERED_BILL_CAP} onSave={saveData} isAdmin={isAdmin} />)}
+                            {isAdmin && activeTab === 'bowlInput' && (<BowlInput players={players} handleNameChange={handleNameChange} handleBowlScoreChange={handleBowlScoreChange} onSave={saveData} isOffline={isOffline} />)}
+                            {activeTab === 'bowlStandings' && (<Standings sortedPlayers={sortedBowlPlayers} title="Bowl Pool Standings" />)}
+                            {activeTab === 'games' && (<Games user={user} />)}
+                        </div>
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+name: Update Scores (The Grader)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Runs every 15 minutes
+  workflow_dispatch: # Allows manual run button
+
+jobs:
+  update-scores:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Check Scores and Grade
+        run: |
+          python -c "
+          import requests
+          import json
+          import os
+
+          # 1. LOAD EXISTING ODDS
+          if not os.path.exists('odds.json'):
+              print('No odds file found. Skipping.')
+              exit(0)
+
+          with open('odds.json', 'r') as f:
+              games = json.load(f)
+
+          # Helper to normalize names for matching (e.g. 'Ole Miss' vs 'Mississippi')
+          def clean_name(name):
+              return name.lower().replace('state', '').replace('university', '').strip()
+
+          # 2. FETCH ESPN SCORES (NFL & NCAAF)
+          # These endpoints are free and public
+          espn_urls = [
+              'http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
+              'http://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard'
+          ]
+          
+          live_data = []
+          for url in espn_urls:
+              try:
+                  res = requests.get(url)
+                  data = res.json()
+                  if 'events' in data:
+                      live_data.extend(data['events'])
+              except:
+                  pass
+
+          # 3. MATCH AND GRADE
+          changes_made = False
+          
+          for game in games:
+              # Skip if already Final (unless you want to update post-game stats)
+              if game.get('status') == 'Final':
+                  continue
+
+              # Find matching game in ESPN data
+              match = None
+              for event in live_data:
+                  # ESPN Data Structure
+                  comp = event['competitions'][0]
+                  e_home = comp['competitors'][0]['team']['displayName']
+                  e_away = comp['competitors'][1]['team']['displayName']
+                  
+                  # Fuzzy Match: Check if our name is inside ESPN's name or vice-versa
+                  # e.g. 'Kansas City' matches 'Kansas City Chiefs'
+                  if (game['home_team'] in e_home or e_home in game['home_team']) and \
+                     (game['away_team'] in e_away or e_away in game['away_team']):
+                      match = comp
+                      break
+              
+              if match:
+                  # Get Scores
+                  home_comp = match['competitors'][0]
+                  away_comp = match['competitors'][1]
+                  
+                  # ESPN sometimes flips the order, so check the 'homeAway' flag
+                  if home_comp['homeAway'] == 'away':
+                      home_comp, away_comp = away_comp, home_comp
+
+                  current_home_score = int(home_comp['score'])
+                  current_away_score = int(away_comp['score'])
+                  game_status = match['status']['type']['description'] # e.g. 'In Progress', 'Halftime', 'Final'
+
+                  # Update our file with live info
+                  game['home_score'] = current_home_score
+                  game['away_score'] = current_away_score
+                  game['status'] = game_status
+                  changes_made = True
+
+                  # GRADE IT (Only if Final)
+                  if 'Final' in game_status:
+                      spread = game.get('spread_raw')
+                      
+                      if spread is not None and spread != 'N/A':
+                          # Logic: Add spread to Home Score. Compare to Away.
+                          # Example: Chiefs (-3.5) vs Ravens. 
+                          # If Chiefs score 24, Ravens 20. 
+                          # Adjusted Home = 24 + (-3.5) = 20.5. 
+                          # 20.5 > 20, so Home Wins (Covers).
+                          adjusted_home = current_home_score + float(spread)
+                          
+                          if adjusted_home > current_away_score:
+                              game['winner'] = 'Home'
+                          elif adjusted_home < current_away_score:
+                              game['winner'] = 'Away'
+                          else:
+                              game['winner'] = 'Push'
+                              
+                          # Total (Over/Under) Logic could go here too if you need it
+
+          # 4. SAVE (Only if we found updates)
+          if changes_made:
+              with open('odds.json', 'w') as f:
+                  json.dump(games, f, indent=2)
+              print('Updated live scores.')
+          else:
+              print('No live game updates found.')
+          "
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name 'Odds-Bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add odds.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m 'Update Live Scores' && git push)

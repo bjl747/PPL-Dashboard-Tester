@@ -1,0 +1,111 @@
+name: Update Betting Lines (The Setup)
+
+on:
+  schedule:
+    - cron: '0 16 * * *' # Runs daily at 10am CST (16:00 UTC)
+  workflow_dispatch: # Allows manual button click
+
+jobs:
+  update-odds:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Fetch Upcoming Odds
+        env:
+          API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python -c "
+          import requests
+          import json
+          import os
+
+          # --- CONFIGURATION ---
+          EXCLUDED_TEAMS = [
+              'Illinois State', 'Montana State', 'North Dakota', 'South Dakota',
+              'Idaho', 'Montana', 'Sacramento State', 'Villanova', 'Richmond',
+              'Furman', 'Albany', 'William & Mary', 'Delaware'
+          ]
+          
+          api_key = os.environ.get('API_KEY')
+          if not api_key:
+              print('Error: API Key is missing!')
+              exit(1)
+
+          sports = ['americanfootball_nfl', 'americanfootball_ncaaf']
+          clean_games = []
+
+          # FETCH NEW ODDS
+          for sport in sports:
+              url = f'https://api.the-odds-api.com/v4/sports/{sport}/odds/?regions=us&markets=spreads,totals&oddsFormat=american&apiKey={api_key}'
+              try:
+                  res = requests.get(url)
+                  res.raise_for_status()
+                  data = res.json()
+
+                  for game in data:
+                      # Filter Excluded Teams
+                      if any(x in game['home_team'] for x in EXCLUDED_TEAMS) or \
+                         any(x in game['away_team'] for x in EXCLUDED_TEAMS):
+                          continue
+                      
+                      # Extract Spread (DraftKings preferred)
+                      spread_val = 'N/A'
+                      total_val = 'N/A'
+                      bookmakers = game.get('bookmakers', [])
+                      if bookmakers:
+                          main_bookie = next((b for b in bookmakers if b['key'] == 'draftkings'), bookmakers[0])
+                          spread_market = next((m for m in main_bookie['markets'] if m['key'] == 'spreads'), None)
+                          if spread_market:
+                              outcome = next((o for o in spread_market['outcomes'] if o['name'] == game['home_team']), None)
+                              if outcome:
+                                  spread_val = outcome.get('point')
+
+                          total_market = next((m for m in main_bookie['markets'] if m['key'] == 'totals'), None)
+                          if total_market:
+                              over_outcome = next((o for o in total_market['outcomes'] if o['name'] == 'Over'), total_market['outcomes'][0])
+                              total_val = str(over_outcome.get('point', 'N/A'))
+
+                      clean_game = {
+                          'id': game['id'],
+                          'date': game['commence_time'],
+                          'home_team': game['home_team'],
+                          'away_team': game['away_team'],
+                          'spread': str(spread_val) if spread_val != 'N/A' else 'N/A', # Display
+                          'spread_raw': spread_val, # Math
+                          'over_under': total_val,
+                          'info': game.get('notes', ''),
+                          'league': 'NFL' if 'nfl' in sport else 'NCAAF',
+                          'status': 'Scheduled',
+                          'winner': None,
+                          'home_score': 0,
+                          'away_score': 0
+                      }
+                      clean_games.append(clean_game)
+
+              except Exception as e:
+                  print(f'Error fetching odds for {sport}: {e}')
+
+          clean_games.sort(key=lambda x: x['date'])
+          
+          with open('odds.json', 'w') as f:
+              json.dump(clean_games, f, indent=2)
+          "
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name 'Odds-Bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add odds.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m 'New Betting Lines' && git push)

@@ -29,8 +29,28 @@
             from { opacity: 0; transform: translate3d(0, 20px, 0); }
             to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
         .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.75); }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #16a34a;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #16a34a;
+        }
+        
+        /* Tooltip Container */
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans">
@@ -124,6 +144,16 @@
         const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></IconBase>;
         const Unlock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></IconBase>;
         const Calendar = (p) => <IconBase {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>;
+        const CheckCircle = (p) => <IconBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></IconBase>;
+        const XCircle = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></IconBase>;
+        const ClipboardList = (p) => <IconBase {...p}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></IconBase>;
+        const UserIcon = (p) => <IconBase {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>;
+        const Trash = (p) => <IconBase {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></IconBase>;
+        const Settings = (p) => <IconBase {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>;
+        const Star = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></IconBase>;
+        const MenuIcon = (p) => <IconBase {...p}><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></IconBase>;
+        const Eye = (p) => <IconBase {...p}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></IconBase>;
+        const EyeOff = (p) => <IconBase {...p}><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></IconBase>;
 
         const { useState, useMemo, useEffect } = React;
         const PAYOUT_PERCENTAGES = [0.00, 1.28, 2.56, 3.85, 5.13, 6.41, 7.69, 8.97, 10.26, 11.54, 12.82, 14.10, 15.38];
@@ -154,16 +184,121 @@
             "Kevin Berthelsen": { week: 11, amount: 65 }
         };
 
-        const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
+        // --- UPDATED NAVIGATION COMPONENT FOR MENU ---
+        const MenuLink = ({ id, icon: Icon, label, activeTab, setActiveTab, onClick }) => (
             <button
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-t-lg font-bold transition-colors duration-200 text-sm md:text-base whitespace-nowrap flex-shrink-0 ${
-                activeTab === id ? 'bg-white text-red-700 border-t-4 border-red-700 shadow-sm' : 'bg-black text-gray-400 hover:text-white hover:bg-gray-900'}`}
+                onClick={() => { setActiveTab(id); if(onClick) onClick(); }}
+                className={`flex items-center w-full px-6 py-4 text-left transition-colors border-b border-gray-100 ${
+                activeTab === id ? 'bg-red-50 text-red-700 font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
             >
-                <Icon size={18} />
+                <Icon size={20} className={`mr-4 ${activeTab === id ? 'text-red-700' : 'text-gray-400'}`} />
                 <span>{label}</span>
             </button>
         );
+
+        // --- LOGIN COMPONENT ---
+        const Login = () => {
+            const [email, setEmail] = useState("");
+            const [password, setPassword] = useState("");
+            const [isSignUp, setIsSignUp] = useState(false);
+            const [error, setError] = useState("");
+
+            const handleGoogleSignIn = async () => {
+                if (!auth) return;
+                const provider = new firebase.auth.GoogleAuthProvider();
+                try {
+                    await auth.signInWithPopup(provider);
+                } catch (err) {
+                    setError(err.message);
+                }
+            };
+
+            const handleEmailAuth = async (e) => {
+                e.preventDefault();
+                setError("");
+                if (!auth) return;
+
+                try {
+                    if (isSignUp) {
+                        await auth.createUserWithEmailAndPassword(email, password);
+                    } else {
+                        await auth.signInWithEmailAndPassword(email, password);
+                    }
+                } catch (err) {
+                    setError(err.message);
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+                    <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Pigskin Prognosticators League</h1>
+                            <p className="text-gray-500">Sign in to view dashboard</p>
+                        </div>
+
+                        <button 
+                            onClick={handleGoogleSignIn}
+                            className="w-full flex items-center justify-center bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-4 rounded-lg transition duration-200 shadow-sm mb-6"
+                        >
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 mr-3" />
+                            Sign in with Google
+                        </button>
+
+                        <div className="flex items-center mb-6">
+                            <div className="flex-grow border-t border-gray-300"></div>
+                            <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                            <div className="flex-grow border-t border-gray-300"></div>
+                        </div>
+
+                        <form onSubmit={handleEmailAuth} className="space-y-4">
+                            <div>
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
+                                <input 
+                                    type="email" 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                                    required 
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                                <input 
+                                    type="password" 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                                    required 
+                                />
+                            </div>
+                            
+                            {error && (
+                                <div className="text-red-500 text-sm bg-red-50 p-2 rounded border border-red-200">
+                                    {error}
+                                </div>
+                            )}
+
+                            <button 
+                                type="submit" 
+                                className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+                            >
+                                {isSignUp ? "Sign Up" : "Log In"}
+                            </button>
+                        </form>
+
+                        <div className="mt-6 text-center">
+                            <button 
+                                onClick={() => setIsSignUp(!isSignUp)}
+                                className="text-sm text-red-600 hover:text-red-800 font-medium"
+                            >
+                                {isSignUp ? "Already have an account? Log In" : "Don't have an account? Create one"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
 
         const LoginModal = ({ isOpen, onClose, onLogin }) => {
             const [password, setPassword] = useState("");
@@ -189,109 +324,58 @@
             );
         };
 
-        const Games = ({ user }) => {
+        const Games = ({ user, odds }) => {
             const [groupedGames, setGroupedGames] = useState({});
-            const [status, setStatus] = useState('loading'); 
             const [picks, setPicks] = useState({});
             const [isSubmitting, setIsSubmitting] = useState(false);
 
-            // MOCK DATA for Preview (Fallback)
-            const MOCK_GAMES = [
-              {
-                date: new Date().toISOString(),
-                home_team: "Kansas City Chiefs",
-                away_team: "Baltimore Ravens",
-                spread: "-3.5",
-                over_under: "48.5",
-                info: "AFC Championship"
-              },
-              {
-                date: new Date().toISOString(),
-                home_team: "San Francisco 49ers",
-                away_team: "Detroit Lions",
-                spread: "-7.0",
-                over_under: "51.0",
-                info: "NFC Championship"
-              }
-            ];
-
-            // Authentication Gate - Checks for 'Real' user (not anonymous)
-            if (!user || user.isAnonymous) {
-                const handleLogin = async () => {
-                    if (!auth) {
-                        alert("Firebase Authentication is not initialized. Check your API keys.");
-                        return;
-                    }
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    try {
-                        // This will trigger the Google sign-in flow.
-                        // If successful, it replaces/links the anonymous account.
-                        await auth.signInWithPopup(provider);
-                    } catch (error) {
-                        console.error("Login Error:", error);
-                        alert("Login Failed: " + error.message);
-                    }
-                };
-
-                return (
-                    <div className="bg-white p-8 rounded-b-lg shadow-lg border border-gray-200 text-center min-h-[50vh] flex flex-col items-center justify-center">
-                        <div className="text-red-600 mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Login Required</h3>
-                        <p className="text-gray-500 mb-6 max-w-md mx-auto">You must be signed in with your Google account to access the betting lines and submit your picks.</p>
-                        <button 
-                            onClick={handleLogin}
-                            className="bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-8 rounded-lg shadow-md transition transform active:scale-95 flex items-center"
-                        >
-                            <span className="mr-2">Sign in with Google</span>
-                        </button>
-                    </div>
-                );
-            }
-
             useEffect(() => {
-                const processData = (data) => {
-                    // Filter Logic: Today through Upcoming Monday
-                    const now = new Date();
-                    const startDate = new Date(now);
-                    startDate.setHours(0, 0, 0, 0);
+                if(!odds || odds.length === 0) return;
 
-                    const dayOfWeek = now.getDay();
-                    const targetMonday = new Date(startDate);
-                    targetMonday.setDate(startDate.getDate() + (dayOfWeek === 1 ? 0 : (1 + 7 - dayOfWeek) % 7)); 
-                    targetMonday.setHours(23, 59, 59, 999);
-                    
-                    const currentGames = data.filter(game => {
-                        const gameDate = new Date(game.date);
-                        return gameDate >= startDate && gameDate <= targetMonday;
-                    });
+                // Group games
+                const now = new Date();
+                const startDate = new Date(now);
+                startDate.setHours(0, 0, 0, 0);
 
-                    currentGames.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const dayOfWeek = now.getDay();
+                const targetMonday = new Date(startDate);
+                targetMonday.setDate(startDate.getDate() + (dayOfWeek === 1 ? 0 : (1 + 7 - dayOfWeek) % 7)); 
+                targetMonday.setHours(23, 59, 59, 999);
+                
+                // Show current week games + any games we have picked that might be old
+                // For simplicity, sticking to the existing week filter logic for display
+                const currentGames = odds.filter(game => {
+                    const gameDate = new Date(game.date);
+                    return gameDate >= startDate && gameDate <= targetMonday;
+                });
 
-                    const groups = currentGames.reduce((acc, game) => {
-                        const d = new Date(game.date);
-                        const dateHeader = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: '2-digit' });
-                        if (!acc[dateHeader]) acc[dateHeader] = [];
-                        acc[dateHeader].push(game);
-                        return acc;
-                    }, {});
+                currentGames.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-                    setGroupedGames(groups);
-                    setStatus(currentGames.length > 0 ? 'success' : 'empty');
-                };
+                const groups = currentGames.reduce((acc, game) => {
+                    const d = new Date(game.date);
+                    const dateHeader = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: '2-digit' });
+                    if (!acc[dateHeader]) acc[dateHeader] = [];
+                    acc[dateHeader].push(game);
+                    return acc;
+                }, {});
 
-                fetch('odds.json')
-                    .then(res => {
-                        if (!res.ok) throw new Error('Failed to fetch odds');
-                        return res.json();
-                    })
-                    .then(data => processData(data))
-                    .catch(err => {
-                        console.warn("Fetch error (using mock data for preview):", err);
-                        processData(MOCK_GAMES);
-                    });
-            }, []);
+                setGroupedGames(groups);
+
+                // Fetch User Picks
+                if(user && db) {
+                    db.collection('artifacts').doc(activeAppId)
+                        .collection('public').doc('data')
+                        .collection('season_2025_picks').doc(user.uid)
+                        .get()
+                        .then(doc => {
+                            if(doc.exists) {
+                                setPicks(doc.data().picks || {});
+                            }
+                        })
+                        .catch(err => console.error("Error fetching user picks", err));
+                }
+
+            }, [odds, user]);
 
             const handlePick = (gameId, type, value) => {
                 setPicks(prev => {
@@ -326,7 +410,7 @@
                             picks: picks,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                             email: user.email,
-                            displayName: user.displayName
+                            displayName: user.displayName || user.email
                         });
                     
                     alert("Picks Submitted Successfully!");
@@ -340,21 +424,11 @@
 
             const totalPickCount = Object.values(picks).reduce((acc, game) => acc + Object.keys(game).length, 0);
 
-            if (status === 'loading') {
+            if (!odds || odds.length === 0) {
                 return (
                     <div className="bg-white p-8 rounded-b-lg shadow-lg border border-gray-200 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700 mx-auto mb-4"></div>
                         <p className="text-gray-500">Loading games...</p>
-                    </div>
-                );
-            }
-
-            if (status === 'error' || status === 'empty') {
-                return (
-                    <div className="bg-white p-8 rounded-b-lg shadow-lg border border-gray-200 text-center">
-                        <AlertCircle className="text-gray-400 mx-auto mb-4" size={48} />
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Lines are currently updating</h3>
-                        <p className="text-gray-500">Please check back in a moment.</p>
                     </div>
                 );
             }
@@ -375,21 +449,57 @@
                                     {groupedGames[dateHeader].map((game, idx) => {
                                         const d = new Date(game.date);
                                         const timeStr = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                                        // Ensure ID generation is consistent with how it will be saved/read
                                         const gameId = `${game.away_team}_${game.home_team}_${game.date}`;
                                         
                                         const homeSpread = parseFloat(game.spread);
                                         const awaySpread = homeSpread * -1;
                                         const fmtSpread = (num) => num > 0 ? `+${num}` : num;
 
-                                        // Big Ticket Button Style
-                                        const getBigButtonClass = (isSelected) => `
-                                            flex justify-between items-center w-full py-3 px-4 border-2 rounded-md transition font-bold text-sm md:text-base mb-2
-                                            ${isSelected 
-                                                ? 'bg-green-600 border-green-600 text-white shadow-md' 
-                                                : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300'}
-                                        `;
-
                                         const currentPicks = picks[gameId] || {};
+                                        
+                                        // Game Result Logic
+                                        const isFinal = game.status === 'Final';
+                                        // Helper to check spread result. 
+                                        // Logic: if winner is 'home', home covers if score diff > spread? 
+                                        // Simplified: The mock data needs 'winner' field: 'home' or 'away' relative to spread.
+                                        // If game.winner is 'home', then picking home spread is correct.
+                                        const getResultIcon = (type, side) => {
+                                            if (!isFinal || !game.winner) return null;
+                                            // Check if user picked this
+                                            if (currentPicks[type] !== side) return null; // Only show icon on selected pick
+                                            
+                                            // Did it win?
+                                            // For spread: compare side ('home'/'away') to game.winner ('home'/'away')
+                                            // For total: compare side ('over'/'under') to game.total_result ('over'/'under') - assuming mock data has this or simple 'winner' handles spread.
+                                            // Let's assume game.winner handles spread winner for now.
+                                            if (type === 'spread') {
+                                                return game.winner === side ? <CheckCircle className="ml-2 text-white" size={20} /> : <XCircle className="ml-2 text-red-200" size={20} />;
+                                            }
+                                            return null; // Todo: Totals logic
+                                        };
+
+                                        // Big Ticket Button Style
+                                        const getBigButtonClass = (isSelected, side, type) => {
+                                            let base = `flex justify-between items-center w-full py-3 px-4 border-2 rounded-md transition font-bold text-sm md:text-base mb-2 `;
+                                            if (isFinal) {
+                                                // Final State
+                                                if (isSelected) {
+                                                    // If selected, show Green (Win) or Red (Loss) base on result? 
+                                                    // Or just keep selection color and add icon?
+                                                    // Let's keep selection color but maybe dim it if lost?
+                                                    // Simple: Green background for selected. Icon indicates win/loss.
+                                                    return base + `bg-green-600 border-green-600 text-white opacity-90 cursor-not-allowed`;
+                                                } else {
+                                                    return base + `bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed`;
+                                                }
+                                            } else {
+                                                // Active Betting State
+                                                return base + (isSelected 
+                                                    ? 'bg-green-600 border-green-600 text-white shadow-md' 
+                                                    : 'bg-white border-gray-200 text-gray-900 hover:border-gray-300');
+                                            }
+                                        };
 
                                         return (
                                             <div key={gameId} className="bg-white border border-gray-300 rounded-lg p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center">
@@ -399,27 +509,41 @@
                                                     
                                                     {/* Row 1: Teams - Away (Left) vs Home (Right) */}
                                                     <div className="col-span-1">
-                                                        <button onClick={() => handlePick(gameId, 'spread', 'away')} className={getBigButtonClass(currentPicks.spread === 'away')}>
-                                                            <span className="truncate mr-2">{game.away_team}</span>
+                                                        <button 
+                                                            onClick={() => !isFinal && handlePick(gameId, 'spread', 'away')} 
+                                                            className={getBigButtonClass(currentPicks.spread === 'away', 'away', 'spread')}
+                                                            disabled={isFinal}
+                                                        >
+                                                            <span className="truncate mr-2 flex items-center">
+                                                                {game.away_team}
+                                                                {getResultIcon('spread', 'away')}
+                                                            </span>
                                                             <span>{fmtSpread(awaySpread)}</span>
                                                         </button>
                                                     </div>
                                                     <div className="col-span-1">
-                                                        <button onClick={() => handlePick(gameId, 'spread', 'home')} className={getBigButtonClass(currentPicks.spread === 'home')}>
-                                                            <span className="truncate mr-2">{game.home_team}</span>
+                                                        <button 
+                                                            onClick={() => !isFinal && handlePick(gameId, 'spread', 'home')} 
+                                                            className={getBigButtonClass(currentPicks.spread === 'home', 'home', 'spread')}
+                                                            disabled={isFinal}
+                                                        >
+                                                            <span className="truncate mr-2 flex items-center">
+                                                                {game.home_team}
+                                                                {getResultIcon('spread', 'home')}
+                                                            </span>
                                                             <span>{fmtSpread(homeSpread)}</span>
                                                         </button>
                                                     </div>
 
                                                     {/* Row 2: Totals - Over (Left) vs Under (Right) */}
                                                     <div className="col-span-1">
-                                                        <button onClick={() => handlePick(gameId, 'total', 'over')} className={getBigButtonClass(currentPicks.total === 'over')}>
+                                                        <button onClick={() => !isFinal && handlePick(gameId, 'total', 'over')} className={getBigButtonClass(currentPicks.total === 'over')} disabled={isFinal}>
                                                             <span>O {game.over_under}</span>
                                                             <span className="text-xs font-normal opacity-75">Over</span>
                                                         </button>
                                                     </div>
                                                     <div className="col-span-1">
-                                                        <button onClick={() => handlePick(gameId, 'total', 'under')} className={getBigButtonClass(currentPicks.total === 'under')}>
+                                                        <button onClick={() => !isFinal && handlePick(gameId, 'total', 'under')} className={getBigButtonClass(currentPicks.total === 'under')} disabled={isFinal}>
                                                             <span>U {game.over_under}</span>
                                                             <span className="text-xs font-normal opacity-75">Under</span>
                                                         </button>
@@ -428,8 +552,12 @@
 
                                                 {/* Right Col: Info */}
                                                 <div className="md:w-32 flex flex-col items-center justify-center text-center pl-0 md:pl-4">
-                                                    <div className="text-lg font-bold text-gray-900">{timeStr}</div>
-                                                    {game.info && <div className="text-xs text-red-600 font-bold uppercase mt-1 bg-red-50 px-2 py-1 rounded">{game.info}</div>}
+                                                    {isFinal ? (
+                                                        <span className="text-red-700 font-bold border border-red-200 bg-red-50 px-2 py-1 rounded text-sm mb-1">FINAL</span>
+                                                    ) : (
+                                                        <div className="text-lg font-bold text-gray-900">{timeStr}</div>
+                                                    )}
+                                                    {game.info && <div className="text-xs text-gray-500 font-bold uppercase mt-1">{game.info}</div>}
                                                 </div>
                                             </div>
                                         );
@@ -439,7 +567,7 @@
                         ))}
                     </div>
 
-                    {totalPickCount > 0 && (
+                    {totalPickCount > 0 && !Object.values(groupedGames).flat().every(g => g.status === 'Final') && (
                         <div className="fixed bottom-0 left-0 w-full bg-black text-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 border-t-4 border-green-600 flex justify-between items-center animate-fade-in-up">
                             <div className="flex flex-col">
                                 <span className="font-bold text-lg leading-tight">{totalPickCount} Pick{totalPickCount !== 1 ? 's' : ''} Selected</span>
@@ -458,36 +586,265 @@
             );
         };
 
-        const Dashboard = ({ players, handleNameChange, handleScoreChange, showImport, setShowImport, importText, setImportText, handleBulkImport, onSave, isOffline }) => (
-            <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">League Dashboard</h2>
-                    <div className="flex items-center space-x-3 w-full sm:w-auto">
-                        <button onClick={() => setShowImport(!showImport)} className="flex items-center justify-center space-x-1 text-sm font-bold text-red-700 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-2 rounded transition-colors w-full sm:w-auto">
-                            <FileText size={16} /><span>Bulk Import</span>
-                        </button>
-                        <div className="text-xs text-gray-500 italic hidden sm:block">{isOffline ? "Changes local only (Offline)" : "Edits save automatically"}</div>
+        const Dashboard = ({ players, handleNameChange, handleScoreChange, showImport, setShowImport, importText, setImportText, handleBulkImport, onSave, isOffline }) => {
+            return (
+                <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">League Dashboard</h2>
+                        <div className="flex items-center space-x-3 w-full sm:w-auto">
+                            <button onClick={() => setShowImport(!showImport)} className="flex items-center justify-center space-x-1 text-sm font-bold text-red-700 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-2 rounded transition-colors w-full sm:w-auto">
+                                <FileText size={16} /><span>Bulk Import</span>
+                            </button>
+                            <div className="text-xs text-gray-500 italic hidden sm:block">{isOffline ? "Changes local only (Offline)" : "Edits save automatically"}</div>
+                        </div>
+                    </div>
+                    {isOffline && (
+                        <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                            <div className="flex items-start">
+                                <AlertCircle className="text-yellow-600 mr-2 mt-0.5" size={16} />
+                                <p className="text-xs text-yellow-800"><strong>Setup Required:</strong> To enable live saving for GitHub, edit this file and replace the <code>firebaseConfig</code> at the top.</p>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Main Points Section */}
+                    <div className="overflow-x-auto -mx-4 md:mx-0 mb-8"><div className="inline-block min-w-full align-middle"><table className="min-w-full divide-y divide-gray-200"><thead className="bg-gray-50"><tr><th className="sticky left-0 z-10 bg-gray-50 px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider shadow-sm md:shadow-none">Player Name</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Total Points</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th></tr></thead><tbody className="bg-white divide-y divide-gray-200">{players.map((player) => (<tr key={player.id} className="hover:bg-red-50 transition-colors"><td className="sticky left-0 z-10 bg-white px-4 md:px-6 py-3 whitespace-nowrap shadow-sm md:shadow-none"><input type="text" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} onBlur={onSave} className="w-32 md:w-full border-gray-300 border-b focus:border-red-700 focus:ring-0 px-2 py-1 text-gray-900 font-medium text-base" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap"><input type="number" value={player.points} onChange={(e) => handleScoreChange(player.id, e.target.value)} onBlur={onSave} className="w-24 border-gray-300 border focus:border-red-700 rounded px-3 py-2 text-gray-900 text-base" pattern="[0-9]*" inputMode="numeric" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500">{isOffline ? <span className="flex items-center text-gray-400">Saved (Local)</span> : <span className="flex items-center text-green-600"><Save size={14} className="mr-1" /> Auto-Save</span>}</td></tr>))}</tbody></table></div></div>
+
+                    {showImport && (
+                        <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200 mt-6">
+                            <div className="flex justify-between items-center mb-2"><h3 className="font-bold text-gray-900">Paste Names List</h3><button onClick={() => setShowImport(false)} className="text-gray-500 hover:text-red-700"><X size={18} /></button></div>
+                            <p className="text-xs text-gray-500 mb-2">Paste a list of names (one per line).</p>
+                            <textarea value={importText} onChange={(e) => setImportText(e.target.value)} className="w-full h-32 p-2 border border-gray-300 rounded focus:border-red-700 focus:ring-0 text-base" placeholder="BJ Layher&#10;John Doe..." />
+                            <button onClick={handleBulkImport} className="mt-2 bg-red-700 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-800 transition-colors w-full sm:w-auto">Update Names</button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        const FantasyAdmin = ({ players, isOffline, championId, setChampionId, onSaveMain }) => {
+            const [fantasyData, setFantasyData] = useState({});
+            const [selectedWeek, setSelectedWeek] = useState("week_1");
+            const [isFantasySaving, setIsFantasySaving] = useState(false);
+
+            useEffect(() => {
+                if (!db) return;
+                const docRef = db.collection('artifacts').doc(activeAppId).collection('public').doc('data').collection('season_2025').doc('fantasy_stats');
+                
+                const unsubscribe = docRef.onSnapshot((doc) => {
+                    if (doc.exists) {
+                        setFantasyData(doc.data());
+                    } else {
+                        const initialData = {};
+                        for (let i = 1; i <= 18; i++) {
+                            initialData[`week_${i}`] = {};
+                        }
+                        docRef.set(initialData);
+                        setFantasyData(initialData);
+                    }
+                });
+                return () => unsubscribe();
+            }, []);
+
+            const handleFantasyChange = (playerId, field, value) => {
+                const newData = { ...fantasyData };
+                if (!newData[selectedWeek]) newData[selectedWeek] = {};
+                if (!newData[selectedWeek][playerId]) newData[selectedWeek][playerId] = {};
+                
+                newData[selectedWeek][playerId][field] = value;
+                setFantasyData(newData);
+            };
+            
+            const handleManualFantasySave = async () => {
+                 if (!db || isOffline) return;
+                 setIsFantasySaving(true);
+                 try {
+                     await db.collection('artifacts').doc(activeAppId).collection('public').doc('data').collection('season_2025').doc('fantasy_stats').set(fantasyData);
+                     setTimeout(() => setIsFantasySaving(false), 800);
+                 } catch (error) {
+                     console.error("Error saving fantasy data: ", error);
+                     setIsFantasySaving(false);
+                     alert("Error saving. Check console.");
+                 }
+            };
+            
+            const isWeek14 = selectedWeek === "week_14";
+            const isWeek17 = selectedWeek === "week_17";
+
+            return (
+                <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">Fantasy</h2>
+                        <div className="flex items-center space-x-3 w-full sm:w-auto mt-4 sm:mt-0">
+                             <select 
+                                value={selectedWeek} 
+                                onChange={(e) => setSelectedWeek(e.target.value)}
+                                className="border border-gray-300 rounded px-3 py-1 text-sm font-bold text-gray-700 focus:border-red-700 focus:ring-0 mr-4"
+                            >
+                                {[...Array(18)].map((_, i) => (
+                                    <option key={i} value={`week_${i+1}`}>Week {i+1}</option>
+                                ))}
+                            </select>
+                            <button
+                                onClick={handleManualFantasySave}
+                                disabled={isFantasySaving}
+                                className={`bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm transition shadow-sm ${isFantasySaving ? 'opacity-75 cursor-wait' : ''}`}
+                            >
+                                {isFantasySaving ? "Saving..." : "Save Weekly Scores"}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Champion Selection (Week 17 Only) */}
+                    {isWeek17 && (
+                        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-center mb-2">
+                                <Trophy size={18} className="text-yellow-600 mr-2" />
+                                <h4 className="font-bold text-yellow-800 text-sm uppercase">Season Champion (+10 Pts)</h4>
+                            </div>
+                            <select 
+                                value={championId || ""} 
+                                onChange={(e) => {
+                                    setChampionId(Number(e.target.value) || null);
+                                    setTimeout(() => onSaveMain(), 100);
+                                }}
+                                className="w-full border border-yellow-300 rounded px-3 py-2 text-sm focus:border-yellow-600 focus:ring-0 bg-white"
+                            >
+                                <option value="">-- Select Champion --</option>
+                                {players.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    
+                     {isOffline && (
+                        <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                            <div className="flex items-start">
+                                <AlertCircle className="text-yellow-600 mr-2 mt-0.5" size={16} />
+                                <p className="text-xs text-yellow-800"><strong>Setup Required:</strong> To enable live saving for GitHub, edit this file and replace the <code>firebaseConfig</code> at the top.</p>
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="overflow-x-auto -mx-4 md:mx-0 rounded-lg border border-gray-200">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-800 text-white">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Player</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Win?</th>
+                                    {isWeek14 && <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-yellow-300">Bye?</th>}
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {players.map((player) => {
+                                    const weekData = fantasyData[selectedWeek] || {};
+                                    const playerData = weekData[player.id] || { isWin: false, isBye: false };
+                                    
+                                    return (
+                                        <tr key={player.id} className="hover:bg-gray-50">
+                                            <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 text-sm">{player.name}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name={`toggle-${player.id}`} 
+                                                        id={`toggle-${player.id}`} 
+                                                        checked={playerData.isWin}
+                                                        onChange={(e) => handleFantasyChange(player.id, 'isWin', e.target.checked)}
+                                                        className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                                                    />
+                                                    <label htmlFor={`toggle-${player.id}`} className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${playerData.isWin ? 'bg-green-600' : 'bg-gray-300'}`}></label>
+                                                </div>
+                                            </td>
+                                            {isWeek14 && (
+                                                <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                    <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            name={`bye-${player.id}`} 
+                                                            id={`bye-${player.id}`} 
+                                                            checked={playerData.isBye}
+                                                            onChange={(e) => handleFantasyChange(player.id, 'isBye', e.target.checked)}
+                                                            className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                                                        />
+                                                        <label htmlFor={`bye-${player.id}`} className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${playerData.isBye ? 'bg-yellow-500' : 'bg-gray-300'}`}></label>
+                                                    </div>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                {isOffline && (
-                    <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-3">
-                         <div className="flex items-start">
-                            <AlertCircle className="text-yellow-600 mr-2 mt-0.5" size={16} />
-                            <p className="text-xs text-yellow-800"><strong>Setup Required:</strong> To enable live saving for GitHub, edit this file and replace the <code>firebaseConfig</code> at the top.</p>
-                         </div>
+            )
+        }
+        
+        // --- NEW ADMIN SETTINGS COMPONENT ---
+        const AdminSettings = ({ tabVisibility, setTabVisibility, onSave, isOffline }) => {
+             const toggleTab = (key) => {
+                 setTabVisibility(prev => ({ ...prev, [key]: !prev[key] }));
+             };
+
+             return (
+                 <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3">Settings</h2>
+                        <div className="text-xs text-gray-500 italic hidden sm:block">{isOffline ? "Changes local only (Offline)" : "Changes auto-save"}</div>
                     </div>
-                )}
-                {showImport && (
-                    <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <div className="flex justify-between items-center mb-2"><h3 className="font-bold text-gray-900">Paste Names List</h3><button onClick={() => setShowImport(false)} className="text-gray-500 hover:text-red-700"><X size={18} /></button></div>
-                        <p className="text-xs text-gray-500 mb-2">Paste a list of names (one per line).</p>
-                        <textarea value={importText} onChange={(e) => setImportText(e.target.value)} className="w-full h-32 p-2 border border-gray-300 rounded focus:border-red-700 focus:ring-0 text-base" placeholder="BJ Layher&#10;John Doe..." />
-                        <button onClick={handleBulkImport} className="mt-2 bg-red-700 text-white px-4 py-2 rounded text-sm font-bold hover:bg-red-800 transition-colors w-full sm:w-auto">Update Names</button>
+                     {isOffline && (
+                        <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                            <div className="flex items-start">
+                                <AlertCircle className="text-yellow-600 mr-2 mt-0.5" size={16} />
+                                <p className="text-xs text-yellow-800"><strong>Setup Required:</strong> To enable live saving for GitHub, edit this file and replace the <code>firebaseConfig</code> at the top.</p>
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="space-y-4">
+                        <h3 className="font-bold text-gray-800 border-b pb-2">Tab Visibility (Public)</h3>
+                        <p className="text-sm text-gray-500 mb-4">Toggle which tabs are visible to non-admin users.</p>
+                        
+                        {Object.keys(tabVisibility).map(key => {
+                            let label = "";
+                            if (key === 'standings') label = "Standings";
+                            else if (key === 'games') label = "Games";
+                            else if (key === 'bowlStandings') label = "Bowl Pool";
+                            else if (key === 'payouts') label = "Payouts";
+                            else return null;
+
+                            return (
+                                <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <span className="font-medium text-gray-700">{label}</span>
+                                    <div className="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+                                        <input 
+                                            type="checkbox" 
+                                            name={`toggle-${key}`} 
+                                            id={`toggle-${key}`} 
+                                            checked={tabVisibility[key]}
+                                            onChange={() => toggleTab(key)}
+                                            className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                                        />
+                                        <label htmlFor={`toggle-${key}`} className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${tabVisibility[key] ? 'bg-green-600' : 'bg-gray-300'}`}></label>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                )}
-                <div className="overflow-x-auto -mx-4 md:mx-0"><div className="inline-block min-w-full align-middle"><table className="min-w-full divide-y divide-gray-200"><thead className="bg-gray-50"><tr><th className="sticky left-0 z-10 bg-gray-50 px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider shadow-sm md:shadow-none">Player Name</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Total Points</th><th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th></tr></thead><tbody className="bg-white divide-y divide-gray-200">{players.map((player) => (<tr key={player.id} className="hover:bg-red-50 transition-colors"><td className="sticky left-0 z-10 bg-white px-4 md:px-6 py-3 whitespace-nowrap shadow-sm md:shadow-none"><input type="text" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} onBlur={onSave} className="w-32 md:w-full border-gray-300 border-b focus:border-red-700 focus:ring-0 px-2 py-1 text-gray-900 font-medium text-base" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap"><input type="number" value={player.points} onChange={(e) => handleScoreChange(player.id, e.target.value)} onBlur={onSave} className="w-24 border-gray-300 border focus:border-red-700 rounded px-3 py-2 text-gray-900 text-base" pattern="[0-9]*" inputMode="numeric" /></td><td className="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500">{isOffline ? <span className="flex items-center text-gray-400">Saved (Local)</span> : <span className="flex items-center text-green-600"><Save size={14} className="mr-1" /> Auto-Save</span>}</td></tr>))}</tbody></table></div></div>
-            </div>
-        );
+                    
+                    <div className="mt-8 flex justify-end">
+                         <button
+                            onClick={onSave}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-md transition-colors"
+                        >
+                            Save Settings
+                        </button>
+                    </div>
+                 </div>
+             );
+        };
 
         const BowlInput = ({ players, handleNameChange, handleBowlScoreChange, onSave, isOffline }) => (
             <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
@@ -499,36 +856,164 @@
             </div>
         );
 
-        const Standings = ({ sortedPlayers, title }) => (
-            <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3 mb-4">{title}</h2>
-                <div className="space-y-2">
-                    {sortedPlayers.map((player, index) => {
-                        const isWinner = index === 0;
-                        const displayPoints = title.includes("Bowl") ? player.bowlPoints : player.points;
-                        const fiveOhData = !title.includes("Bowl") ? FIVE_OH_WINNERS[player.name] : null;
+        const Standings = ({ odds, title, isConnected, players, championId }) => {
+            const [standingsData, setStandingsData] = useState([]);
+            const [loading, setLoading] = useState(true);
 
-                        return (
-                            <div key={player.id} className={`flex items-center justify-between px-3 md:px-4 py-2 rounded-lg border-l-4 shadow-sm ${isWinner ? 'bg-red-50 border-red-600' : 'bg-white border-gray-300'}`}>
-                                <div className="flex items-center space-x-3"><div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm md:text-base ${isWinner ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{index + 1}</div>
-                                <div className="flex flex-col items-start sm:flex-row sm:items-center sm:space-x-2">
-                                    <div className="flex items-center space-x-2">
-                                        <h3 className={`font-bold text-sm md:text-base ${isWinner ? 'text-red-700' : 'text-gray-900'} truncate max-w-[140px] md:max-w-none`}>{player.name}</h3>
-                                        {isWinner && (<span className="text-[10px] font-semibold text-red-600 uppercase tracking-wide border border-red-200 px-1 rounded">Lead</span>)}
+            useEffect(() => {
+                if(!db || !isConnected) {
+                    if(!db) console.warn("No DB connection for standings");
+                    setLoading(false);
+                    return;
+                }
+
+                // Fetch ALL picks
+                db.collection('artifacts').doc(activeAppId)
+                    .collection('public').doc('data')
+                    .collection('season_2025_picks')
+                    .get()
+                    .then(querySnapshot => {
+                        const allUsers = [];
+                        const picksMap = {}; // Map userID -> picksData
+
+                        querySnapshot.forEach(doc => {
+                            // doc.id is the user UID
+                            picksMap[doc.id] = doc.data(); 
+                        });
+                        
+                        // We also need fantasy data to calculate total points
+                         db.collection('artifacts').doc(activeAppId)
+                            .collection('public').doc('data')
+                            .collection('season_2025').doc('fantasy_stats')
+                            .get().then(fantasySnapshot => {
+                                const fantasyData = fantasySnapshot.exists ? fantasySnapshot.data() : {};
+
+                                // Calculate points for each player in the 'players' prop
+                                const calculatedStandings = players.map(p => {
+                                    // 1. Pick'em Points
+                                    // Try to find matching picks by display name since we don't have UID in player object yet
+                                    const playerPicksDoc = Object.values(picksMap).find(pm => pm.displayName === p.name);
+                                    const userPicks = playerPicksDoc ? playerPicksDoc.picks : {};
+                                    
+                                    let pickEmPoints = 0;
+                                    if (odds && odds.length > 0) {
+                                        Object.keys(userPicks).forEach(gameId => {
+                                            const pick = userPicks[gameId];
+                                            if (!pick || !pick.spread) return;
+
+                                            const game = odds.find(g => {
+                                                const gId = `${g.away_team}_${g.home_team}_${g.date}`;
+                                                return gId === gameId;
+                                            });
+
+                                            if (game && game.status === 'Final' && game.winner) {
+                                                if (pick.spread === game.winner) {
+                                                    pickEmPoints++;
+                                                }
+                                            }
+                                        });
+                                    }
+
+                                    // 2. Fantasy Points
+                                    let fantasyPoints = 0;
+                                    for (let i = 1; i <= 18; i++) {
+                                        const weekKey = `week_${i}`;
+                                        const weekData = fantasyData[weekKey];
+                                        if (weekData && weekData[p.id]) {
+                                            const isWin = weekData[p.id].isWin;
+                                            const isBye = i === 14 && weekData[p.id].isBye; // Week 14 Bye Logic
+                                            
+                                            if (isWin || isBye) {
+                                                if (i <= 13) {
+                                                    fantasyPoints += 5;
+                                                } else if (i >= 14 && i <= 16) {
+                                                    fantasyPoints += 6;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // 3. Champion Bonus
+                                    let champBonus = 0;
+                                    if (championId && p.id === championId) {
+                                        champBonus = 10;
+                                    }
+
+                                    return {
+                                        ...p,
+                                        pickEmPoints,
+                                        fantasyPoints,
+                                        champBonus,
+                                        totalPoints: pickEmPoints + fantasyPoints + champBonus
+                                    };
+                                });
+
+                                // Sort
+                                calculatedStandings.sort((a, b) => b.totalPoints - a.totalPoints);
+                                setStandingsData(calculatedStandings);
+                                setLoading(false);
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Error calculating standings:", error);
+                        setLoading(false);
+                    });
+
+            }, [odds, isConnected, players, championId]); // Re-run if players list, odds, connection or champion changes
+
+            if(loading) {
+                return (
+                    <div className="bg-white p-8 rounded-b-lg shadow-lg border border-gray-200 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700 mx-auto mb-4"></div>
+                        <p className="text-gray-500">Calculating standings...</p>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="bg-white p-4 md:p-6 rounded-b-lg shadow-lg border border-gray-200">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 border-l-4 border-red-700 pl-3 mb-4">{title}</h2>
+                    <div className="space-y-2">
+                        {standingsData.length === 0 ? (
+                            <p className="text-gray-500 italic p-4">No picks recorded yet.</p>
+                        ) : (
+                            standingsData.map((player, index) => {
+                                const isWinner = index === 0;
+                                const fiveOhData = !title.includes("Bowl") ? FIVE_OH_WINNERS[player.name] : null;
+
+                                return (
+                                    <div key={player.id} className={`flex items-center justify-between px-3 md:px-4 py-2 rounded-lg border-l-4 shadow-sm ${isWinner ? 'bg-red-50 border-red-600' : 'bg-white border-gray-300'}`}>
+                                        <div className="flex items-center space-x-3"><div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm md:text-base ${isWinner ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{index + 1}</div>
+                                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:space-x-2">
+                                            <div className="flex items-center space-x-2">
+                                                <h3 className={`font-bold text-sm md:text-base ${isWinner ? 'text-red-700' : 'text-gray-900'} truncate max-w-[140px] md:max-w-none`}>{player.name}</h3>
+                                                {isWinner && (<span className="text-[10px] font-semibold text-red-600 uppercase tracking-wide border border-red-200 px-1 rounded">Lead</span>)}
+                                            </div>
+                                            {fiveOhData && (
+                                                <span className="text-xs font-bold text-red-600">
+                                                    (5-0 Week {fiveOhData.week} - ${fiveOhData.amount})
+                                                </span>
+                                            )}
+                                        </div></div>
+                                        <div className="text-right tooltip-container relative">
+                                            <div className="text-lg md:text-xl font-bold text-gray-900 leading-none cursor-help">{player.totalPoints}</div>
+                                            <div className="text-[10px] text-gray-500 uppercase">Pts</div>
+                                            {/* Tooltip */}
+                                            <div className="tooltip-text invisible absolute bottom-full right-0 mb-2 w-32 bg-black text-white text-xs rounded py-1 px-2 z-10 text-center shadow-lg transition-opacity duration-200 opacity-0 pointer-events-none">
+                                                Fantasy: {player.fantasyPoints}<br/>
+                                                Pick'em: {player.pickEmPoints}
+                                                {player.champBonus > 0 && <><br/>Champion: +{player.champBonus}</>}
+                                                <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-black"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    {fiveOhData && (
-                                        <span className="text-xs font-bold text-red-600">
-                                            (5-0 Week {fiveOhData.week} - ${fiveOhData.amount})
-                                        </span>
-                                    )}
-                                </div></div>
-                                <div className="text-right"><div className="text-lg md:text-xl font-bold text-gray-900 leading-none">{displayPoints}</div><div className="text-[10px] text-gray-500 uppercase">Pts</div></div>
-                            </div>
-                        );
-                    })}
+                                );
+                            })
+                        )}
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        };
 
         const Payouts = ({ dinnerCost, setDinnerCost, payoutData, tieredBillCap, onSave, isAdmin }) => {
             const isOverLimit = dinnerCost > tieredBillCap;
@@ -559,11 +1044,39 @@
             const [isSaving, setIsSaving] = useState(false);
             const [isOffline, setIsOffline] = useState(false);
             
-            // --- User State ---
+            // --- State ---
             const [user, setUser] = useState(null);
+            const [oddsData, setOddsData] = useState([]); // Store Odds Here
+            const [championId, setChampionId] = useState(null); // Champion State
+            const [tabVisibility, setTabVisibility] = useState({ standings: true, bowlStandings: true, payouts: true, games: true }); // Tab Visibility State
             
             const [isAdmin, setIsAdmin] = useState(false);
             const [showLogin, setShowLogin] = useState(false);
+            const [isMenuOpen, setIsMenuOpen] = useState(false); // Menu State
+
+            // MOCK DATA for Preview (Fallback)
+            const MOCK_GAMES = [
+              {
+                date: new Date().toISOString(),
+                home_team: "Kansas City Chiefs",
+                away_team: "Baltimore Ravens",
+                spread: "-3.5",
+                over_under: "48.5",
+                info: "AFC Championship",
+                status: "Final",
+                winner: "home" // Chiefs cover
+              },
+              {
+                date: new Date().toISOString(),
+                home_team: "San Francisco 49ers",
+                away_team: "Detroit Lions",
+                spread: "-7.0",
+                over_under: "51.0",
+                info: "NFC Championship",
+                status: "Scheduled",
+                winner: null
+              }
+            ];
 
             useEffect(() => {
                 if (!isConfigValid && !firebaseConfig.apiKey.includes("AIzaSyD")) {
@@ -571,16 +1084,17 @@
                     return;
                 }
 
+                // Initialize Auth
                 const initAuth = async () => {
                     try {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await auth.signInWithCustomToken(__initial_auth_token);
                         } else {
-                            // Only sign in anonymously if NO user is present to allow Google Sign In later
-                            // However, 'auth' persists state. onAuthStateChanged handles it.
-                            if (!auth.currentUser) {
-                                await auth.signInAnonymously();
-                            }
+                            // Don't auto-sign in anon if we want people to use Google. 
+                            // But for reading public data (standings), we need auth?
+                            // Firestore rules typically allow read if auth != null.
+                            // We can try anon sign in if no user.
+                            // if (!auth.currentUser) await auth.signInAnonymously();
                         }
                     } catch (error) {
                         console.error("Auth Error", error);
@@ -591,23 +1105,23 @@
 
                 const unsubscribeAuth = auth.onAuthStateChanged((u) => {
                     if (u) {
-                        setUser(u); // Set the full user object
+                        setUser(u); 
                         setIsConnected(true);
                         setIsOffline(false);
+                        // Fetch Dashboard Data (Manual overrides if any)
                         const docRef = db.collection('artifacts').doc(activeAppId).collection('public').doc('data').collection('season_2025').doc('main');
-                        
                         const unsubscribeSnapshot = docRef.onSnapshot((doc) => {
                             if (doc.exists) {
                                 const data = doc.data();
-                                if (data && data.players) {
-                                    setPlayers(data.players);
-                                    if (data.dinnerCost) setDinnerCost(data.dinnerCost);
-                                }
+                                if (data && data.dinnerCost) setDinnerCost(data.dinnerCost);
+                                if (data && data.players) setPlayers(data.players);
+                                if (data && data.championId) setChampionId(data.championId); // Load Champion
+                                if (data && data.tabVisibility) setTabVisibility(data.tabVisibility); // Load Tab Visibility
                             } else {
-                                docRef.set({
+                                docRef.set({ 
                                     players: INITIAL_PLAYERS,
-                                    dinnerCost: 2500,
-                                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                                    dinnerCost: 2500, 
+                                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp() 
                                 });
                             }
                         });
@@ -617,6 +1131,16 @@
                         setIsConnected(false);
                     }
                 });
+
+                // Fetch Odds centrally
+                fetch('odds.json')
+                    .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+                    .then(data => setOddsData(data))
+                    .catch(err => {
+                        console.warn("Fetch error (using mock):", err);
+                        setOddsData(MOCK_GAMES);
+                    });
+
                 return () => unsubscribeAuth();
             }, []);
 
@@ -627,8 +1151,10 @@
                     await db.collection('artifacts').doc(activeAppId).collection('public').doc('data').collection('season_2025').doc('main').set({
                         players: players,
                         dinnerCost: dinnerCost,
+                        championId: championId, // Save Champion
+                        tabVisibility: tabVisibility, // Save Tab Visibility
                         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    }, { merge: true }); // Merge to not overwrite other fields
                     setTimeout(() => setIsSaving(false), 500); 
                 } catch (error) {
                     console.error("Error saving data: ", error);
@@ -659,7 +1185,7 @@
             const handleScoreChange = (id, newPoints) => { setPlayers(prev => prev.map(p => p.id === id ? { ...p, points: Number(newPoints) } : p)); };
             const handleBowlScoreChange = (id, newPoints) => { setPlayers(prev => prev.map(p => p.id === id ? { ...p, bowlPoints: Number(newPoints) } : p)); };
             const handleNameChange = (id, newName) => { setPlayers(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p)); };
-
+            
             const handleBulkImport = () => {
                 const names = importText.split('\n').map(n => n.trim()).filter(n => n);
                 if (names.length === 0) return;
@@ -677,33 +1203,125 @@
 
             const handleLogout = () => { setIsAdmin(false); setActiveTab('standings'); };
 
+            // Close menu when clicking outside (on overlay)
+            const handleOverlayClick = (e) => {
+                if (e.target.id === 'menu-overlay') {
+                    setIsMenuOpen(false);
+                }
+            };
+
+            // Close menu when a link is clicked
+            const handleMenuLinkClick = () => {
+                setIsMenuOpen(false);
+            };
+
+            if (!user) return <Login />;
+
             return (
                 <div className="min-h-screen bg-gray-100 font-sans text-gray-900 pb-12">
                     <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onLogin={() => { setIsAdmin(true); setActiveTab('dashboard'); }} />
+                    
+                    {/* Header */}
                     <header className="bg-black text-white shadow-lg border-b-4 border-red-700 sticky top-0 z-40">
                         <div className="max-w-4xl mx-auto px-4 py-4 md:py-6 flex items-center justify-between">
-                            <div><h1 className="text-xl md:text-3xl font-extrabold tracking-tight text-white"><span className="text-red-600">PPL</span> Dashboard 2025-2026</h1><p className="text-gray-400 text-xs md:text-sm mt-1">Pigskin Prognosticators League</p></div>
-                            <div className="flex flex-col items-end">
-                                <div className="flex items-center space-x-3 mb-1"><div className="hidden sm:block"><div className="bg-red-700 text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider">Season 2025-26</div></div><button onClick={isAdmin ? handleLogout : () => setShowLogin(true)} className={`flex items-center text-xs font-bold px-2 py-1 rounded border ${isAdmin ? 'bg-red-900 border-red-500 text-white' : 'bg-gray-800 border-gray-600 text-gray-400 hover:text-white'}`}>{isAdmin ? <Unlock size={14} className="mr-1" /> : <Lock size={14} className="mr-1" />}{isAdmin ? "Admin" : "Login"}</button></div>
-                                <div className="flex items-center space-x-2 text-xs">{isConnected ? <span className="flex items-center text-green-400"><Cloud size={14} className="mr-1" />{isSaving ? "Saving..." : "Online"}</span> : <span className="flex items-center text-gray-400"><CloudOff size={14} className="mr-1" />Offline</span>}</div>
+                            <div>
+                                <h1 className="text-xl md:text-3xl font-extrabold tracking-tight text-white">
+                                    <span className="text-red-600">PPL</span> Dashboard 2025-2026
+                                </h1>
+                            </div>
+                            <div>
+                                <button 
+                                    onClick={() => setIsMenuOpen(true)}
+                                    className="text-white hover:text-gray-300 focus:outline-none"
+                                >
+                                    <MenuIcon size={28} />
+                                </button>
                             </div>
                         </div>
                     </header>
-                    <main className="max-w-4xl mx-auto px-0 md:px-4 mt-4 md:mt-8">
-                        <div className="flex border-b border-gray-300 mb-0 overflow-x-auto no-scrollbar px-2 md:px-0 bg-gray-100">
-                            <NavButton id="standings" icon={Trophy} label="Standings" activeTab={activeTab} setActiveTab={setActiveTab} />
-                            <NavButton id="bowlStandings" icon={Medal} label="Bowl Pool" activeTab={activeTab} setActiveTab={setActiveTab} />
-                            <NavButton id="payouts" icon={Calculator} label="Payouts" activeTab={activeTab} setActiveTab={setActiveTab} />
-                            <NavButton id="games" icon={Calendar} label="Games" activeTab={activeTab} setActiveTab={setActiveTab} />
-                            {isAdmin && (<><div className="w-px bg-gray-300 mx-1"></div><NavButton id="dashboard" icon={Users} label="Dashboard" activeTab={activeTab} setActiveTab={setActiveTab} /><NavButton id="bowlInput" icon={ScrollText} label="Bowl Input" activeTab={activeTab} setActiveTab={setActiveTab} /></>)}
+
+                    {/* Side Menu Drawer */}
+                    {isMenuOpen && (
+                        <div 
+                            id="menu-overlay"
+                            className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-end"
+                            onClick={handleOverlayClick}
+                        >
+                            <div className="w-64 bg-white h-full shadow-2xl animate-slide-in-right flex flex-col">
+                                <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                                    <h2 className="font-bold text-lg text-gray-800">Menu</h2>
+                                    <button onClick={() => setIsMenuOpen(false)} className="text-gray-500 hover:text-red-700">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto py-2">
+                                    {(isAdmin || tabVisibility.standings) && <MenuLink id="standings" icon={Trophy} label="Standings" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />}
+                                    {(isAdmin || tabVisibility.games) && <MenuLink id="games" icon={Calendar} label="Games" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />}
+                                    {(isAdmin || tabVisibility.bowlStandings) && <MenuLink id="bowlStandings" icon={Medal} label="Bowl Pool" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />}
+                                    {(isAdmin || tabVisibility.payouts) && <MenuLink id="payouts" icon={Calculator} label="Payouts" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />}
+                                    
+                                    {isAdmin && (
+                                        <>
+                                            <div className="my-2 border-t border-gray-100"></div>
+                                            <div className="px-6 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Admin</div>
+                                            <MenuLink id="dashboard" icon={Users} label="Dashboard" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />
+                                            <MenuLink id="bowlInput" icon={ScrollText} label="Bowl Input" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />
+                                            <MenuLink id="fantasyAdmin" icon={ClipboardList} label="Fantasy" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />
+                                            <MenuLink id="adminSettings" icon={Settings} label="Settings" activeTab={activeTab} setActiveTab={setActiveTab} onClick={handleMenuLinkClick} />
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="p-4 border-t border-gray-200 bg-gray-50">
+                                    <div className="flex flex-col space-y-3">
+                                        <div className="text-xs text-gray-500 font-medium text-center">
+                                            Season 2025-26
+                                        </div>
+                                        
+                                        <button 
+                                            onClick={() => {
+                                                if (isAdmin) handleLogout();
+                                                else setShowLogin(true);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className={`flex items-center justify-center text-sm font-bold px-4 py-2 rounded border w-full ${isAdmin ? 'bg-red-900 border-red-500 text-white' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+                                        >
+                                            {isAdmin ? <Unlock size={14} className="mr-2" /> : <Lock size={14} className="mr-2" />}
+                                            {isAdmin ? "Admin Logout" : "Admin Login"}
+                                        </button>
+                                        
+                                        <div className="flex items-center justify-center space-x-2 text-xs pt-1">
+                                            {isConnected ? (
+                                                <span className="flex items-center text-green-600 font-medium">
+                                                    <Cloud size={12} className="mr-1" />
+                                                    {isSaving ? "Saving..." : "Online"}
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center text-gray-500">
+                                                    <CloudOff size={12} className="mr-1" />
+                                                    Offline
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                    )}
+
+                    <main className="max-w-4xl mx-auto px-0 md:px-4 mt-4 md:mt-8">
+                        {/* Tab Bar Removed - Replaced by Menu */}
+                        
                         <div className="animate-fade-in-up">
                             {isAdmin && activeTab === 'dashboard' && (<Dashboard players={players} handleNameChange={handleNameChange} handleScoreChange={handleScoreChange} showImport={showImport} setShowImport={setShowImport} importText={importText} setImportText={setImportText} handleBulkImport={handleBulkImport} onSave={saveData} isOffline={isOffline} />)}
-                            {activeTab === 'standings' && (<Standings sortedPlayers={sortedPlayers} title="Current Standings" />)}
+                            {activeTab === 'standings' && (<Standings odds={oddsData} title="Current Standings" isConnected={isConnected} players={players} championId={championId} />)}
                             {activeTab === 'payouts' && (<Payouts dinnerCost={dinnerCost} setDinnerCost={setDinnerCost} payoutData={payoutData} tieredBillCap={TIERED_BILL_CAP} onSave={saveData} isAdmin={isAdmin} />)}
                             {isAdmin && activeTab === 'bowlInput' && (<BowlInput players={players} handleNameChange={handleNameChange} handleBowlScoreChange={handleBowlScoreChange} onSave={saveData} isOffline={isOffline} />)}
-                            {activeTab === 'bowlStandings' && (<Standings sortedPlayers={sortedBowlPlayers} title="Bowl Pool Standings" />)}
-                            {activeTab === 'games' && (<Games user={user} />)}
+                            {isAdmin && activeTab === 'fantasyAdmin' && (<FantasyAdmin players={players} isOffline={isOffline} championId={championId} setChampionId={setChampionId} onSaveMain={saveData} />)}
+                            {isAdmin && activeTab === 'adminSettings' && (<AdminSettings tabVisibility={tabVisibility} setTabVisibility={setTabVisibility} onSave={saveData} isOffline={isOffline} />)}
+                            {activeTab === 'bowlStandings' && (<Standings odds={oddsData} title="Bowl Pool Standings" isConnected={isConnected} players={players} />)}
+                            {activeTab === 'games' && (<Games user={user} odds={oddsData} />)}
                         </div>
                     </main>
                 </div>

@@ -131,8 +131,8 @@
     "league": "NFL",
     "status": "In Progress",
     "winner": null,
-    "home_score": 7,
-    "away_score": 10
+    "home_score": 14,
+    "away_score": 26
   },
   {
     "id": "cb77efed7e711d25a72c1a2a0a1af119",
@@ -146,8 +146,8 @@
     "league": "NFL",
     "status": "In Progress",
     "winner": null,
-    "home_score": 3,
-    "away_score": 12
+    "home_score": 32,
+    "away_score": 22
   },
   {
     "id": "c5d95f48a16849ab6bebc68fbbfcb74a",
@@ -161,8 +161,8 @@
     "league": "NFL",
     "status": "In Progress",
     "winner": null,
-    "home_score": 10,
-    "away_score": 3
+    "home_score": 27,
+    "away_score": 13
   },
   {
     "id": "17885cb8dcade8f6c3bce14b2de805e8",
@@ -176,8 +176,8 @@
     "league": "NFL",
     "status": "In Progress",
     "winner": null,
-    "home_score": 7,
-    "away_score": 3
+    "home_score": 24,
+    "away_score": 16
   },
   {
     "id": "3e646c7479c57f5d9752d8c7dfe7059b",

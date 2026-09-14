@@ -189,10 +189,10 @@
     "over_under": "47.5",
     "info": "",
     "league": "NFL",
-    "status": "In Progress",
-    "winner": null,
-    "home_score": 7,
-    "away_score": 7
+    "status": "Final",
+    "winner": "Home",
+    "home_score": 28,
+    "away_score": 20
   },
   {
     "id": "5ad8135dc2b5f27de0b777acd317855a",

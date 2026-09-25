@@ -24,10 +24,10 @@
     "over_under": "42.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "Halftime",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 7,
+    "away_score": 17
   },
   {
     "id": "d9a781a64fc2c4b45290db32b5ec3f20",

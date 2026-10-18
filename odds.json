@@ -759,10 +759,10 @@
     "over_under": "42.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 28,
+    "away_score": 31
   },
   {
     "id": "7c312fdf24fb35f58b0e07c2932cc997",

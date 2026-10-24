@@ -84,10 +84,10 @@
     "over_under": "51.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
+    "status": "End of Period",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 3,
+    "away_score": 10
   },
   {
     "id": "bbbabc2490914e9a4d1e619a32461b1f",
@@ -99,10 +99,10 @@
     "over_under": "55.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 10,
+    "away_score": 7
   },
   {
     "id": "7a2b82b534f197acfe4913fcdaa86792",
@@ -114,10 +114,10 @@
     "over_under": "56.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 3,
+    "away_score": 6
   },
   {
     "id": "f8b869953172e3a19c4cf347b05c1ee8",
@@ -144,10 +144,10 @@
     "over_under": "42.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
     "home_score": 0,
-    "away_score": 0
+    "away_score": 3
   },
   {
     "id": "2d125f14eca5c6eb1417f126cafde7c0",
@@ -159,9 +159,9 @@
     "over_under": "48.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
+    "home_score": 10,
     "away_score": 0
   },
   {
@@ -174,10 +174,10 @@
     "over_under": "58.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 21,
+    "away_score": 3
   },
   {
     "id": "1067cba701eaa40c3724cceda30524c6",

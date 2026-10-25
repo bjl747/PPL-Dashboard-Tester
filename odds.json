@@ -639,10 +639,10 @@
     "over_under": "44.5",
     "info": "",
     "league": "NFL",
-    "status": "In Progress",
-    "winner": null,
-    "home_score": 0,
-    "away_score": 3
+    "status": "Final",
+    "winner": "Away",
+    "home_score": 10,
+    "away_score": 16
   },
   {
     "id": "b1be064fb52a198a62109c279e7ab24c",
@@ -654,10 +654,10 @@
     "over_under": "49.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 3,
+    "away_score": 7
   },
   {
     "id": "550ec5290f935d311995affbcb0b5c79",
@@ -669,9 +669,9 @@
     "over_under": "47.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
+    "home_score": 7,
     "away_score": 0
   },
   {
@@ -684,10 +684,10 @@
     "over_under": "44.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
     "home_score": 0,
-    "away_score": 0
+    "away_score": 7
   },
   {
     "id": "5dce18baccec5d3ad5fb3a3ce52f7619",
@@ -699,10 +699,10 @@
     "over_under": "36.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 14,
+    "away_score": 7
   },
   {
     "id": "2bba7fde6f97d0e54403d53676e4ab63",
@@ -714,10 +714,10 @@
     "over_under": "42.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 3,
+    "away_score": 7
   },
   {
     "id": "f3992ad4496724baf7dcd1ef58245d6b",
@@ -729,10 +729,10 @@
     "over_under": "41.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
     "home_score": 0,
-    "away_score": 0
+    "away_score": 7
   },
   {
     "id": "be5dd120ca08b43d647b6caa8953500a",
@@ -744,10 +744,10 @@
     "over_under": "39.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
+    "status": "In Progress",
     "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "home_score": 7,
+    "away_score": 14
   },
   {
     "id": "436119bb3ccdaa6ed7808aa3ebd82b76",

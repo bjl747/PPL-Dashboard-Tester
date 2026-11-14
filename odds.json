@@ -24,10 +24,10 @@
     "over_under": "48.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
-    "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "status": "Final",
+    "winner": "Away",
+    "home_score": 22,
+    "away_score": 14
   },
   {
     "id": "73d83d88b3a35eeb4bcf8462ff2070b2",
@@ -39,10 +39,10 @@
     "over_under": "52.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
-    "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "status": "Final",
+    "winner": "Home",
+    "home_score": 42,
+    "away_score": 32
   },
   {
     "id": "d6d167714ff638b23e84d757ff522414",

@@ -9,10 +9,10 @@
     "over_under": "54.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
-    "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "status": "Final",
+    "winner": "Away",
+    "home_score": 38,
+    "away_score": 39
   },
   {
     "id": "b39108d2cfcd62d29954aee80bbf7b51",
@@ -24,10 +24,10 @@
     "over_under": "46.5",
     "info": "",
     "league": "NCAAF",
-    "status": "Scheduled",
-    "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "status": "Final",
+    "winner": "Home",
+    "home_score": 48,
+    "away_score": 27
   },
   {
     "id": "f36f518585aec40e8cb40e071c0844aa",
@@ -39,10 +39,10 @@
     "over_under": "45.5",
     "info": "",
     "league": "NFL",
-    "status": "Scheduled",
-    "winner": null,
-    "home_score": 0,
-    "away_score": 0
+    "status": "Final",
+    "winner": "Push",
+    "home_score": 13,
+    "away_score": 10
   },
   {
     "id": "e0b30f1dada22d4a2565ce663bc0741a",
